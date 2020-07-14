@@ -9,8 +9,8 @@
   :gerbil/gambit/threads
   :std/db/leveldb
   :std/misc/completion :std/misc/list :std/misc/deque :std/sugar
-  :utils/base :utils/concurrency :utils/number
-  :poo/poo :poo/mop :poo/io :poo/number :poo/type
+  :clan/base :clan/concurrency :clan/number
+  :clan/poo/poo :clan/poo/mop :clan/poo/io :clan/poo/number :clan/poo/type
   ./db)
 
 (def PairNatNat (Pair Nat Nat)) ;; used to represent start and length of queue

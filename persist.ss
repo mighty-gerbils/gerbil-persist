@@ -1,11 +1,11 @@
 ;; Persisting Data
 (export #t)
 (import
-  (for-syntax :utils/syntax)
+  (for-syntax :clan/syntax)
   :gerbil/gambit/bytes :gerbil/gambit/ports :gerbil/gambit/threads
   :std/format :std/misc/completion :std/misc/hash :std/sugar
-  :utils/base :utils/concurrency :utils/string
-  :poo/poo :poo/mop :poo/io :poo/type
+  :clan/base :clan/concurrency :clan/string
+  :clan/poo/poo :clan/poo/mop :clan/poo/io :clan/poo/type
   ./db ./db-queue)
 
 (.def (Port @ Type.) sexp: 'Port .element?: port?)

@@ -50,7 +50,7 @@
   :gerbil/gambit/threads
   :std/db/leveldb
   :std/misc/completion :std/misc/list :std/sugar
-  ../utils/base ../utils/concurrency ../utils/number ../utils/path)
+  :clan/base :clan/concurrency :clan/number :clan/path)
 
 (defstruct DbConnection
   (name ;; name, a string, also path to the leveldb storage

@@ -1,53 +1,59 @@
 (gerbil-build-deps-v2:
- (persist/version (gxc: "version.ss") (gerbil/core utils/versioning))
- (persist/db
+ (clan/persist/version
+  (gxc: "version.ss")
+  (clan/crypto/version
+   clan/poo/version
+   clan/version
+   clan/versioning
+   gerbil/core))
+ (clan/persist/db
   (gxc: "db.ss")
-  (gerbil/core
+  (clan/base
+   clan/concurrency
+   clan/number
+   clan/path
+   gerbil/core
    gerbil/gambit/threads
    std/db/leveldb
    std/misc/completion
    std/misc/list
-   std/sugar
-   utils/base
-   utils/concurrency
-   utils/number
-   utils/path))
- (persist/db-queue
+   std/sugar))
+ (clan/persist/db-queue
   (gxc: "db-queue.ss")
-  (gerbil/core
+  (clan/base
+   clan/concurrency
+   clan/number
+   clan/persist/db
+   clan/poo/io
+   clan/poo/mop
+   clan/poo/number
+   clan/poo/poo
+   clan/poo/type
+   gerbil/core
    gerbil/gambit/threads
-   persist/db
-   poo/io
-   poo/mop
-   poo/number
-   poo/poo
-   poo/type
    std/db/leveldb
    std/misc/completion
    std/misc/deque
    std/misc/list
-   std/sugar
-   utils/base
-   utils/concurrency
-   utils/number))
- (persist/persist
+   std/sugar))
+ (clan/persist/persist
   (gxc: "persist.ss")
-  (gerbil/core
+  (clan/base
+   clan/concurrency
+   clan/persist/db
+   clan/persist/db-queue
+   clan/poo/io
+   clan/poo/mop
+   clan/poo/poo
+   clan/poo/type
+   clan/string
+   clan/syntax
+   gerbil/core
    gerbil/gambit/bytes
    gerbil/gambit/ports
    gerbil/gambit/threads
-   persist/db
-   persist/db-queue
-   poo/io
-   poo/mop
-   poo/poo
-   poo/type
    std/format
    std/misc/completion
    std/misc/hash
-   std/sugar
-   utils/base
-   utils/concurrency
-   utils/string
-   utils/syntax)))
+   std/sugar)))
 
