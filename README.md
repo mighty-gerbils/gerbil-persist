@@ -2,8 +2,9 @@
 
 Gerbil-persist is a package to persist concurrent activities as well as data.
 It currently uses LevelDB as a trivial key-value store underneath.
-In the future, it may use PostgreSQL or CockroachDB instead,
-or its own shared-memory object database in the style of manardb?
+In the future, it may use [PostgreSQL](https://www.postgresql.org/)
+or [CockroachDB](https://www.cockroachlabs.com/) instead,
+or its own shared-memory object database in the style of [manardb](https://github.com/danlentz/manardb)?
 
 ### Copyright and License
 
