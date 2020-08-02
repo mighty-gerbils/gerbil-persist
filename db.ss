@@ -49,8 +49,8 @@
 (import
   :gerbil/gambit/threads
   :std/db/leveldb
-  :std/misc/completion :std/misc/list :std/sugar
-  :clan/base :clan/concurrency :clan/number :clan/path)
+  :std/misc/completion :std/misc/list :std/misc/number :std/sugar
+  :clan/base :clan/concurrency :clan/path)
 
 (defstruct DbConnection
   (name ;; name, a string, also path to the leveldb storage
