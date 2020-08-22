@@ -8,7 +8,7 @@
   ../db)
 
 (def db-integrationtest
-  (test-suite "test suite for persist/db"
+  (test-suite "integration test for persist/db"
     (test-case "open close db twice"
       (prn 1)
       (def c (open-db-connection (run-path "testdb")))

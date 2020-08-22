@@ -8,44 +8,20 @@
   :clan/poo/poo :clan/poo/mop :clan/poo/io :clan/poo/type
   ./db ./db-queue)
 
-(.def (Port @ Type.) sexp: 'Port .element?: port?)
-(.def (Thread @ Type.) sexp: 'Thread .element?: thread?)
-(.def (Completion @ Type.) sexp: 'Completion .element?: completion?)
-
 (.defgeneric (walk-dependencies type f x) ;; Unit <- 'a:Type (Unit <- 'b:Type 'b) 'a
    slot: .walk-dependencies default: void)
 
-(.defgeneric (digest type b) slot: .digest)
-
-(def content-addressed-storage-prefix (string->bytes "CA"))
-
-(def type-tags (make-hash-table))
-(def (type-tag type)
-  (hash-ensure-ref type-tags type
-                   (cut object->string (.@ type sexp))))
-
-(def (content-addressed-storage-key digest)
-  (u8vector-append content-addressed-storage-prefix digest))
-
-(def content-addressed-storage-mutex (make-mutex 'cas))
-(def content-addressed-storage-cache (make-hash-table weak-values: #t))
-
-;; Load an object from database based on its contents address, with a cache
-;; 'a <- 'a:Type Digest TX
-(def (<-digest type digest tx)
-  (with-lock content-addressed-storage-mutex
-    (cut hash-ensure-ref
-         content-addressed-storage-cache [(type-tag type) . digest]
-         (cut <-bytes type (db-get (content-addressed-storage-key digest) tx)))))
-
+;; Unit <- 'a:Type 'a TX
 (def (make-dependencies-persistent type x tx)
   (walk-dependencies type (cut make-persistent <> <> tx) x))
 
-(def (make-persistent type x tx)
-  (def k (content-addressed-storage-key (digest type x)))
-  (unless (db-key? k tx)
-    (make-dependencies-persistent type x tx)
-    (db-put! k (bytes<- type x) tx)))
+;; Unit <- 'a:Type 'a TX
+(.defgeneric (make-persistent type x tx)
+   slot: .make-persistent default: void)
+
+(.def (Port @ Type.) sexp: 'Port .element?: port?)
+(.def (Thread @ Type.) sexp: 'Thread .element?: thread?)
+(.def (Completion @ Type.) sexp: 'Completion .element?: completion?)
 
 (.def (TX @ Type.)
    sexp: 'TX
