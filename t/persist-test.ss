@@ -6,5 +6,6 @@
 
 (def persist-test
   (test-suite "test suite for persist/persist"
-    (test-case "nop"
-      (void))))
+    (displayln "TRY INTEGRATION TESTS INSTEAD, USING:")
+    (displayln "  ./unit-tests.ss integration")
+    (void)))

@@ -5,7 +5,7 @@
   :gerbil/gambit/bytes :gerbil/gambit/ports :gerbil/gambit/threads
   :std/format :std/lazy :std/misc/completion :std/misc/hash :std/sugar
   :clan/base :clan/concurrency :clan/string
-  :clan/poo/poo :clan/poo/mop :clan/poo/io :clan/poo/type :clan/poo/brace
+  :clan/poo/poo :clan/poo/mop :clan/poo/fun :clan/poo/io :clan/poo/type :clan/poo/brace
   :clan/crypto/keccak
   ./db ./db-queue ./persist)
 
@@ -115,6 +115,9 @@
 ;; ContentAddressed
 (.def (ContentAddressed. @ [ContentAddressable] T .digesting)
   sexp: `(ContentAddressed ,(.@ T sexp))
+  Wrapper: {(:: @ [Wrapper.])
+    .ap: (lambda (v) (dv T v))
+    .unap: value<-dv}
   .validate:
   (lambda (dv (ctx '()))
     (def c [[validating: dv] . ctx])
@@ -124,17 +127,16 @@
        (validate T v c)
        (match (std/lazy#&lazy-e (DV-digest dv))
          (['resolved . d]
-          (unless (equal? d (digest<- T v .digesting)) (type-error c "digest does not match")))
-         (_ (void))))
-      (_ (void))))
+          (unless (equal? d (digest<- T v .digesting)) (type-error c "digest does not match"))
+          dv)
+         (_ dv)))
+      (_ dv)))
   .Digest: (Digesting-Digest .digesting)
   .bytes<-: digest<-dv
   .<-bytes: (cut dv<-digest @ <>)
-  .digest<-: .<-bytes ;; don't double-digest!
+  .digest<-: .bytes<- ;; don't double-digest!
   .marshal: (lambda (dv port) (marshal .Digest (digest<-dv dv) port))
   .unmarshal: (lambda (port) (.<-bytes (unmarshal .Digest port)))
-  .wrap: (lambda (v) (dv T v))
-  .unwrap: value<-dv
   .make-persistent:
   (lambda (dv tx)
     (unless (DV-persisted? dv)

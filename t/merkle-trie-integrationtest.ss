@@ -1,46 +1,52 @@
-(export db-integrationtest)
+(export #t)
 
 (import
   :gerbil/gambit/random
-  :std/sugar :std/test
   :std/format :std/misc/list :std/misc/repr
+  :std/sugar :std/test :std/text/hex
+  :clan/assert
   :clan/concurrency :clan/number :clan/path-config
-  :clan/poo/type
+  :clan/t/test-support
+  :clan/poo/poo :clan/poo/type :clan/poo/number :clan/poo/trie
   :clan/poo/t/table-testing
-  ../db ../merkle-trie)
+  ../db ../content-addressing ../merkle-trie)
 
-(.def (T @ [MerkleTrie])
-   Key: UInt256 Value: String)
+(def T (MerkleTrie Value: String))
+
+(def-table-test-accessors T)
+
+(def trie-100 (<-alist al-100-decimal))
+(def trie-10-12-57 (<-l '(10 12 57)))
+(def trie-4 (<-l '(1 2 3 4)))
+
+(def (check-proof t k v)
+  (match (F .proof<- t k)
+    ([sub . up]
+     (assert-equal! (F .unwrap sub) (Leaf v))
+     (F .validate-proof (F .digest<- t) sub up '()))
+    (_ (error "foo"))))
 
 (def (merkle-tests T)
   (table-test-case T "merkle trie tests"
-    (def (check-proof t k v)
-      (match (F .proof<- t k)
-        ([sub . up]
-         (assert-equal! (F .unwrap sub) (Leaf v))
-         (F .validate-proof (F .digest<- t) sub up '()))
-        (_ (error "foo"))))
+    (test-case "simple proof consistent 1"
+      (check-proof (<-l '(0 1)) 0 "0"))
     (test-case "simple proof consistent 100"
       (check-proof (F .singleton 100 "100") 100 "100"))
-    (test-case "simple_proof_consistent_1"
-      (check-proof (<-alist '((0 . "0") (1 . "1"))) 0 "0"))
-    (test-case "simple_proof_consistent_1"
-      (check-proof (<-alist '((0 . "0") (1 . "1"))) 0 "0"))
     (def good-merkle-path
-      (cons ($Costep -1 42)
-            (map (lambda (x) (BranchStep (hex-decode x)))
-                 ["064880959049e1ee770ac5669c3960ebe0121394b82966503f91439bc545caa4"
-                  "b3d80cf4680db145cafc56adfda19cd3f745cdbd1d0294cffe7491cc49b54320"
-                  "e48546b788ccbca97760865fe0e901fbc28ad8689cbdffadc9fe80d014207651"
-                  "faaea838f3c3dcb79244c307ba41e0cf36cfe8104895239bad3df50a041601bd"
-                  "a7358ee547e1cf2ba6d90bddea49c1bfa44686c7a8103e4816794ebc23b365a5"
-                  "d09db87e7553ac9ed1760c94ef8a5e2a85683051d6906c54fc603298357998a0"
-                  "e6520b16a86ad925aacd94247978f64ebea0d7e6d530247dc612c7a3897d5eb1"])))
+      ($Path ($Costep -1 42)
+             (map (lambda (x) (BranchStep (hex-decode x)))
+                  ["7c79d94b79bf44bc3a8d1f9c1d6f887fad01a94aeaf95060f994ac6f29f2fbd4"
+                   "c024a35e4802d3a7e43d7c6e87f687417fc8a9ef1a3a664952151381e58942b1"
+                   "8399f332007d0fbacbc5b9eea7fff98295de897e8fd176981ff289e47eef7a5f"
+                   "d9b180853f5efbd8632128050ffdadf762e0304740507bbb801a04702353f858"
+                   "7b5bbad9ce47c55a0f88dd235c7bf23b7ebc341e0ba59106d2c247a60b9b60f6"
+                   "afb6fd06436bc357dfee6f4b33196f2240a685a876e22aa87eec79830560fdf7"
+                   "80a28f0ced76060709881876dfc255d2e06f6d0a0cb33c5677c1e0402079900d"])))
     (def bad-merkle-path
       (match good-merkle-path
-        ((cons C [s1 s2 s3 s4 s5 s6 s7]) (cons C [s1 s2 s5 s4 s3 s6 s7])))) ;; swap steps 3 and 5
+        (($Path C [s1 s2 s3 s4 s5 s6 s7]) ($Path C [s1 s2 s5 s4 s3 s6 s7])))) ;; swap steps 3 and 5
     (test-case "proof"
-      (check-equal? (F .proof<- trie-100 42) (cons (F .leaf "42") good-merkle-path)))
+      (check-equal? (cdr (F .proof<- trie-100 42)) good-merkle-path))
     (test-case "simple-proof-consistent"
       (check-proof (F .singleton 0 "0") 0 "0"))
     (test-case "simple-proof-consistent-4"
@@ -50,9 +56,9 @@
     (test-case "simple-proof-consistent-24"
       (check-proof trie-4 2 "2"))
     (test-case "proof-inconsistent"
-      (check-exception (F .validate-proof (F .digest<- trie-100) (F .leaf 42) good-merkle-path)))
+      (check-exception (F .validate-proof (F .digest<- trie-100) (F .leaf 42) good-merkle-path) true))
     (test-case "proof-inconsistent"
-      (check-exception (F .validate-proof (F .digest<- trie-100) (F .leaf 42) bad-merkle-path)))))
+      (check-exception (F .validate-proof (F .digest<- trie-100) (F .leaf 42) bad-merkle-path) true))))
 
 (def merkle-trie-integrationtest
   (test-suite "integration test for persist/merkle-trie"
