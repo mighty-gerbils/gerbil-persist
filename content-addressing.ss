@@ -148,3 +148,16 @@
             (db-put! k (bytes<- T v) tx)))))))
 
 (def (ContentAddressed t) {(:: @ ContentAddressed.) t})
+
+
+(def (digest<-marshal marshal (digesting (current-content-addressing)))
+  (digest<-bytes (call-with-output-u8vector marshal) digesting))
+
+(defrule (marshal-product port (val type) ...)
+  (begin (marshal type val port) ...))
+
+(defrules digest-product ()
+  ((_ (digesting) (val type) ...)
+   (digest<-marshal (lambda (port) (marshal-product port (val type) ...)) digesting))
+  ((d (val type) ...)
+   (d ((current-content-addressing)) (val type) ...)))

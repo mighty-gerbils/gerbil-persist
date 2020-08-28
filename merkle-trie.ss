@@ -10,6 +10,8 @@
 ;; TODO: automatically work recursively on a descriptor for the "open recursion scheme" type functor
 ;; of which the data structure is a fixed-point.
 ;; TODO: support negative proofs. Specially detect empty digest?
+;; TODO: support remember the current skip info in DigestedTrie, so you can properly simulate
+;; .make-branch and .make-skip when re-digesting a trie with a leaf removed.
 
 (.def (DigestedTrie. @ [Trie.] Key Height Value .digesting T Step .wrap)
   sexp: `(DigestedTrie ,(.@ Key sexp) ,(.@ Height sexp) ,(.@ Value sexp) ,(Digesting-sexp .digesting))
