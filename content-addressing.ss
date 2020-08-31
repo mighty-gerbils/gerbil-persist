@@ -4,7 +4,7 @@
   (for-syntax :clan/syntax)
   :gerbil/gambit/bytes :gerbil/gambit/ports :gerbil/gambit/threads
   :std/format :std/lazy :std/misc/completion :std/misc/hash :std/sugar
-  :clan/base :clan/concurrency :clan/string
+  :clan/base :clan/concurrency :clan/io :clan/string
   :clan/poo/poo :clan/poo/mop :clan/poo/fun :clan/poo/io :clan/poo/type :clan/poo/brace
   :clan/crypto/keccak
   ./db ./db-queue ./persist)
@@ -149,12 +149,8 @@
 
 (def (ContentAddressed t) {(:: @ ContentAddressed.) t})
 
-
 (def (digest<-marshal marshal (digesting (current-content-addressing)))
   (digest<-bytes (call-with-output-u8vector marshal) digesting))
-
-(defrule (marshal-product port (val type) ...)
-  (begin (marshal type val port) ...))
 
 (defrules digest-product ()
   ((_ (digesting) (val type) ...)
