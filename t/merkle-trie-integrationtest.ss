@@ -6,7 +6,7 @@
   :std/sugar :std/test :std/text/hex
   :clan/assert
   :clan/concurrency :clan/number :clan/path-config
-  :clan/t/test-support
+  :clan/testing
   :clan/poo/poo :clan/poo/type :clan/poo/number :clan/poo/trie
   :clan/poo/t/table-testing
   ../db ../content-addressing ../merkle-trie)
