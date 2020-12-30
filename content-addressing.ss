@@ -3,7 +3,7 @@
 (import
   (for-syntax :clan/syntax)
   :gerbil/gambit/bytes :gerbil/gambit/ports :gerbil/gambit/threads
-  :std/format :std/lazy :std/misc/completion :std/misc/hash :std/sugar
+  :std/format :std/lazy :std/misc/completion :std/misc/hash :std/misc/ports :std/sugar
   :clan/base :clan/concurrency :clan/io :clan/string
   :clan/poo/poo :clan/poo/mop :clan/poo/fun :clan/poo/io :clan/poo/type :clan/poo/brace
   :clan/crypto/keccak
@@ -50,6 +50,12 @@
 ;; : Digest <- String ?Digesting
 (def (digest<-string string (digesting (current-content-addressing)))
   (digest<-bytes (string->bytes string) digesting))
+
+;; : Digest <- String ?Digesting
+(def (digest<-file path (digesting (current-content-addressing)))
+  ;; TODO: make it work efficiently on large files without loading the entire file into memory,
+  ;; just into buffers of say 8KB or 1MB, or whatever works best.
+  (digest<-bytes (read-file-u8vector path) digesting))
 
 ;; trait for digestability in a given content-addressing context
 (.def (Digestable @ [] .bytes<- .digesting)
