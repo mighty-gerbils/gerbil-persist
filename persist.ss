@@ -274,22 +274,19 @@
   (lambda (key)
     ((thread-specific (<-key key)))))
 
-
 ;; TODO: handle mixin inheritance graph so we can make this a mixin rather than an alternative superclass
 (.def (SavingDebug @ [] Key State sexp key-prefix)
   saving: =>
   (lambda (super)
     (fun (saving db-key state tx)
-      (def key (<-bytes Key (subu8vector db-key (bytes-length key-prefix) (bytes-length db-key))))
+      ;;(def key (<-bytes Key (subu8vector db-key (bytes-length key-prefix) (bytes-length db-key))))
       ;;(printf "SAVING ~s ~s => ~s\n" sexp (sexp<- Key key) (sexp<- State state))
       (super db-key state tx)))
   .resume: =>
   (lambda (super)
     (fun (resume key state tx)
       ;;(printf "RESUME ~s ~s => ~s\n" sexp (sexp<- Key key) (sexp<- State state))
-      ;;(DBG resume-2:
-      (super key state tx)
-      )));;)
+      (super key state tx))))
 
 (.def (DebugPersistentActivity @ [SavingDebug PersistentActivity]))
 
