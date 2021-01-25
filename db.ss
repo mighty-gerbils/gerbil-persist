@@ -186,23 +186,23 @@
 ;; * Return the result of the inner expression, after the transaction is closed but not committed.
 ;;   If you need to synchronize on the transaction, be sure to return it or otherwise memorize it,
 ;;   or use after-commit from within the body.
-(def (call-with-tx fun (c #f))
+(def (call-with-tx fun (c #f) wait: (wait #f))
   (awhen (t (current-db-transaction))
     (error "Cannot nest transactions" t))
   (def tx (open-transaction (or c (current-db-connection))))
   (try
    (parameterize ((current-db-transaction tx))
      (fun tx))
-   (finally (close-transaction tx))))
+   (finally
+    (close-transaction tx)
+    (when wait (sync-transaction tx)))))
 (defrule (with-tx (tx dbc ...) body ...)
   (call-with-tx (lambda (tx) body ...) dbc ...))
 (defrule (without-tx body ...)
   (parameterize ((current-db-transaction #f)) body ...))
 
 (def (call-with-committed-tx fun (c #f))
-  (defvalues (result tx) (with-tx (tx_) (values (fun tx_) tx_)))
-  (sync-transaction tx)
-  result)
+  (call-with-tx fun c wait: #t))
 (defrule (with-committed-tx (tx dbc ...) body ...)
   (call-with-committed-tx (lambda (tx) body ...) dbc ...))
 (defrule (after-commit (tx) body ...)
