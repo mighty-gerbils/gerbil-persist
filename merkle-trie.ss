@@ -2,7 +2,7 @@
 
 (import
   :clan/base
-  :clan/poo/poo :clan/poo/mop :clan/poo/type :clan/poo/brace :clan/poo/io
+  :clan/poo/object :clan/poo/mop :clan/poo/type :clan/poo/brace :clan/poo/io
   :clan/poo/trie :clan/poo/number
   ./content-addressing)
 

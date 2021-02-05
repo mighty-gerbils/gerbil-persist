@@ -5,7 +5,7 @@
   :gerbil/gambit/bytes :gerbil/gambit/ports :gerbil/gambit/threads
   :std/format :std/lazy :std/misc/completion :std/misc/hash :std/misc/ports :std/sugar
   :clan/base :clan/concurrency :clan/io :clan/string
-  :clan/poo/poo :clan/poo/mop :clan/poo/fun :clan/poo/io :clan/poo/type :clan/poo/brace
+  :clan/poo/object :clan/poo/mop :clan/poo/fun :clan/poo/io :clan/poo/type :clan/poo/brace
   :clan/crypto/keccak
   ./db ./db-queue ./persist)
 

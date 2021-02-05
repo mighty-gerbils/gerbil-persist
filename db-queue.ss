@@ -10,7 +10,7 @@
   :std/db/leveldb
   :std/misc/completion :std/misc/deque :std/misc/list :std/misc/number :std/sugar
   :clan/base :clan/concurrency
-  :clan/poo/poo :clan/poo/mop :clan/poo/io :clan/poo/number :clan/poo/type
+  :clan/poo/object :clan/poo/mop :clan/poo/io :clan/poo/number :clan/poo/type
   ./db)
 
 (def PairNatNat (Pair Nat Nat)) ;; used to represent start and length of queue

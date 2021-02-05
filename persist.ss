@@ -5,7 +5,7 @@
   :gerbil/gambit/bytes :gerbil/gambit/ports :gerbil/gambit/threads
   :std/format :std/misc/completion :std/misc/hash :std/sugar
   :clan/base :clan/concurrency :clan/string
-  :clan/poo/poo :clan/poo/mop :clan/poo/io :clan/poo/type
+  :clan/poo/object :clan/poo/mop :clan/poo/io :clan/poo/type
   ./db ./db-queue)
 
 (.defgeneric (walk-dependencies type f x) ;; Unit <- 'a:Type (Unit <- 'b:Type 'b) 'a
