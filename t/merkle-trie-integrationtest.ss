@@ -63,6 +63,6 @@
 (def merkle-trie-integrationtest
   (test-suite "integration test for persist/merkle-trie"
     (init-test-random-source!)
-    (with-db-connection (c (run-path "testdb"))
+    (with-db-connection (c "testdb")
       (table-tests T)
       (merkle-tests T))))

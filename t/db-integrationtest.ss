@@ -11,15 +11,15 @@
   (test-suite "integration test for persist/db"
     (test-case "open close db twice"
       (prn 1)
-      (def c (open-db-connection (run-path "testdb")))
+      (def c (open-db-connection "testdb"))
       (close-db-connection! c)
       (prn 2)
-      (def c2 (open-db-connection (run-path "testdb")))
+      (def c2 (open-db-connection "testdb"))
       (close-db-connection! c2))
     (test-case "test-trivial-testdb-put-get"
       (def test-val (random-integer 1000000000))
       (def key (string->bytes "test-key1"))
-      (with-db-connection (c (run-path "testdb"))
+      (with-db-connection (c-path "testdb")
         (with-committed-tx (tx) (db-put! key (bytes<-nat test-val) tx))
         (check-equal? (nat<-bytes (with-tx (tx) (db-get key tx))) test-val)
         (with-committed-tx (tx) (db-put! key (bytes<-nat (1+ test-val)) tx))
@@ -47,7 +47,7 @@
            (printf "IN TEST ~d: ~a\n" i (error-message e))
            (push! [i (error-message e)] failures))))
       (defvalues (initial-batch-id final-batch-id)
-      (with-db-connection (c (run-path "testdb"))
+      (with-db-connection (c "testdb")
         (def initial-batch-id (get-batch-id c))
         (parallel-map test-commit (iota n-workers 1))
         (def final-batch-id (get-batch-id c))

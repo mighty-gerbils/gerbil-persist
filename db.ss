@@ -50,7 +50,7 @@
   :gerbil/gambit/threads
   :std/db/leveldb
   :std/misc/completion :std/misc/list :std/misc/number :std/sugar
-  :clan/base :clan/concurrency :clan/path)
+  :clan/base :clan/concurrency :clan/path :clan/path-config)
 
 (defstruct DbConnection
   (name ;; name, a string, also path to the leveldb storage
@@ -83,8 +83,9 @@
 
 (def current-db-connection (make-parameter #f))
 (def (open-db-connection name (opts (leveldb-default-options)))
-  (create-directory* (path-parent name))
-  (DbConnection name (leveldb-open name opts)))
+  (def path (ensure-absolute-path name persistent-directory))
+  (create-directory* (path-parent path))
+  (DbConnection name (leveldb-open path opts)))
 (def (open-db-connection! name (opts (leveldb-default-options)))
   (current-db-connection (open-db-connection name opts)))
 (def (close-db-connection! c)
