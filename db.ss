@@ -128,7 +128,7 @@
   (unless (DbConnection-timer c)
     (let (batch-id (DbConnection-batch-id c))
       (set! (DbConnection-timer c)
-        (spawn/name
+        (spawn/name/logged
          ['timer batch-id]
          (lambda () (thread-sleep! deferred-db-trigger-interval-in-seconds)
             (with-db-lock (c)
@@ -207,7 +207,9 @@
 (defrule (with-committed-tx (tx dbc ...) body ...)
   (call-with-committed-tx (lambda (tx) body ...) dbc ...))
 (defrule (after-commit (tx) body ...)
-  (without-tx (spawn (lambda () (completion-wait! (DbTransaction-completion tx)) body ...))))
+  (without-tx (spawn/name/logged
+               ['after-commit (DbTransaction-txid tx)]
+               (lambda () (completion-wait! (DbTransaction-completion tx)) body ...))))
 
 ;; Mark a transaction as ready to be committed.
 ;; Return a completion that will be posted when the transaction is committed to disk.
