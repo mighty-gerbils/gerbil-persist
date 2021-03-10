@@ -6,6 +6,7 @@
   :std/format :std/misc/completion :std/misc/hash :std/sugar
   :clan/base :clan/concurrency :clan/string
   :clan/poo/object :clan/poo/mop :clan/poo/io :clan/poo/type
+  :clan/debug :clan/poo/debug
   ./db ./db-queue)
 
 (.defgeneric (walk-dependencies type f x) ;; Unit <- 'a:Type (Unit <- 'b:Type 'b) 'a
@@ -45,7 +46,7 @@
        ;; they will call the read method, that will indirectly call make-activity with proper arguments.
        ;; : @ <- Key (Unit <- State TX) State TX
        .restore)
-  restore: (validate (Fun @ <- Key (Fun Unit <- State TX) State TX) .restore)
+  restore: (validate (Fun @ <- Key (Fun Unit <- State TX) State TX) .restore [[restore: sexp]])
 
   ;; Internal table of objects that have already been loaded from database.
   ;;loaded:: (Table @ <- Key)
@@ -83,7 +84,7 @@
   ;; either synchronously commit-transaction if it owns the transaction, or asynchronously call
   ;; sync-transaction if it doesn't, before it may assume the state being committed.
   ;; : (Fun @ <- Key State TX)
-  resume: (validate (Fun @ <- Key State TX) .resume)
+  resume: (validate (Fun @ <- Key State TX) .resume [[resume: sexp]])
   .resume:
   (lambda (key state tx)
     (def db-key (db-key<- key))
@@ -115,7 +116,7 @@
   ;; has to sync-transaction to wait for it being saved.
   ;; Also, proper mutual exclusion must be used to ensure only one piece of code
   ;; may attempt create to create an activity with the given key at any point in time.
-  make: (validate (Fun @ <- Key (Fun State <- (Fun Unit <- State TX) TX) TX) .make)
+  make: (validate (Fun @ <- Key (Fun State <- (Fun Unit <- State TX) TX) TX) .make [[make: sexp]])
   .make:
   (lambda (key init tx)
     (def db-key (db-key<- key))
@@ -130,14 +131,14 @@
 ;; In case they may be borrowed, they must provide some mutual exclusion mechanism
 ;; that the borrowing activity will use to ensure data consistency.
 (.def (PersistentData @ Persistent.
-       Key loaded resume-from-db db-key<-)
+       Key loaded resume-from-db db-key<- sexp)
   ;; Read the object from its key, given a context.
   ;; For activities, this is an internal function that should only be called via get.
   ;; For passive data, this is a function that borrowers may use after they ensure mutual exclusion.
   ;; For those kinds of objects where it makes sense, this may create a default activity.
   ;; Clients of this code must use proper mutual exclusion so there are no concurrent calls to get.
   ;; Get may indirectly call resume if the object is in the database, and make-default-state if not.
-  get: (validate (Fun @ <- Key TX) .get)
+  get: (validate (Fun @ <- Key TX) .get [[get: sexp]])
   .get:
   (lambda (key tx)
     (def db-key (db-key<- key))
@@ -149,10 +150,10 @@
 ;; they may synchronize to I/O (including the DB) though outside transactions.
 ;; Activities communicate with each other using asynchronous messages.
 (.def (PersistentActivity @ Persistent.
-       Key loaded resume-from-db db-key<-)
+       Key loaded resume-from-db db-key<- sexp)
   ;; Get the activity by its key.
   ;; No transaction is provided: the activity will make its own if needed.
-  <-key: (validate (Fun @ <- Key) .<-key)
+  <-key: (validate (Fun @ <- Key) .<-key [[<-key: sexp]])
   .<-key:
   (lambda (key)
     (def db-key (db-key<- key))
@@ -186,7 +187,7 @@
     (def (set-state! new-state) (save! new-state tx) (set! state new-state))
     (def (process-bytes msg tx)
       (def message (<-bytes Message msg))
-      ;;(DBG process: (sexp<- Key key) (sexp<- State state) (sexp<- Message message))
+      ;;(DDT process: Key key State state Message message)
       (process message get-state set-state! tx))
     (def qkey (u8vector-append (db-key<- key) #u8(81))) ;; 81 is ASCII for #\Q
     (def q (DbQueue-restore name qkey process))
@@ -220,7 +221,7 @@
     (def (get-state) state)
     (def (set-state! new-state) (save! new-state tx) (set! state new-state))
     (def (process msg)
-      ;;(DBG process: name (sexp<- State state) msg)
+      ;;(DDT process: Any name State state Any msg)
       (match msg
         ([Transform: f k]
          (call/values (lambda () (with-tx (tx) (f get-state set-state! tx))) k))))
