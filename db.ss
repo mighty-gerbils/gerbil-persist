@@ -70,7 +70,7 @@
     (def pending-transactions []) ;; (List Transaction)
     (def batch-id 0) ;; Nat
     (def batch (leveldb-writebatch)) ;; leveldb-writebatch
-    (def batch-completion (make-completion))
+    (def batch-completion (make-completion '(db-batch 0)))
     (def ready? #t) ;; Bool
     (def triggered? #f) ;; Bool
     (def manager (db-manager self)) ;; Thread
@@ -288,7 +288,7 @@
   (def pending-transactions (DbConnection-pending-transactions c))
   (set! (DbConnection-batch-id c) (1+ batch-id))
   (set! (DbConnection-batch c) (leveldb-writebatch))
-  (set! (DbConnection-batch-completion c) (make-completion))
+  (set! (DbConnection-batch-completion c) (make-completion `(db-batch , (DbConnection-batch-id c))))
   (set! (DbConnection-pending-transactions c) [])
   (set! (DbConnection-blocked-transactions c) [])
   (set! (DbConnection-ready? c) #f)
