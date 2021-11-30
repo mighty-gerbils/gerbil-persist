@@ -3,7 +3,9 @@
 (import
   (for-syntax :clan/syntax)
   :gerbil/gambit/bytes :gerbil/gambit/ports :gerbil/gambit/threads
-  :std/format :std/misc/completion :std/misc/hash :std/sugar
+  :std/assert :std/format
+  :std/misc/completion :std/misc/hash
+  :std/sugar
   :clan/base :clan/concurrency :clan/string
   :clan/poo/object :clan/poo/mop :clan/poo/io :clan/poo/type
   :clan/debug :clan/poo/debug
