@@ -49,7 +49,7 @@
 (import
   :gerbil/gambit/threads
   :std/db/leveldb
-  :std/misc/completion :std/misc/list :std/misc/number :std/sugar
+  :std/misc/completion :std/misc/list :std/misc/number :std/sugar :std/assert
   :clan/base :clan/concurrency :clan/path :clan/path-config)
 
 (defstruct DbConnection
