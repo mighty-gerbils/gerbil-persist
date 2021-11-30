@@ -2,8 +2,9 @@
 
 (import
   :gerbil/gambit/random
-  :std/sugar :std/assert :std/test
-  :std/format :std/misc/list :std/misc/repr
+  :std/assert :std/format
+  :std/misc/list :std/misc/repr
+  :std/sugar :std/test
   :clan/concurrency :clan/number :clan/path-config
   ../db)
 
