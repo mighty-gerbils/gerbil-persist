@@ -16,7 +16,7 @@
 (.def (DigestedTrie. @ [Trie.] Key Height Value .digesting T Step .wrap)
   sexp: `(DigestedTrie ,(.@ Key sexp) ,(.@ Height sexp) ,(.@ Value sexp) ,(Digesting-sexp .digesting))
   Digest: (Digesting-Digest .digesting)
-  validate: (.@ Digest validate)
+  .validate: (.@ Digest .validate)
   .sexp<-: (.@ Digest .sexp<-)
   .marshal: (.@ Digest .marshal)
   .unmarshal: (.@ Digest .marshal)
@@ -26,7 +26,7 @@
   .<-json: (.@ Digest .<-json)
   Wrapper: {
     .ap: (lambda (v) (digest<-bytes (.call T .bytes<- v) .digesting))
-    .unap: invalid .bind: invalid .map: invalid}
+    .unap: invalid .bind: invalid .map: invalid }
   Unstep: =>.+ {(:: @ [] .symmetric)
                 .up: (.symmetric branch: (lambda (_ h l r) (.wrap (Branch h l r)))
                                  skip: (lambda (_ h l b c) (.wrap (Skip h l b c))))}
