@@ -12,20 +12,18 @@ Gerbil-Persist is distributed under the Apache License, version 2.0. See the fil
 
 ## Changes Underway
 
-We are in the process of:
-- Replace LevelDB by an abstraction over key value stores (see kvs.ss, kvs-leveldb.ss)
-- Use sqlite as second backend, intended as default for embedding on Gambit-C (kvs-sqlite.ss)
-- Generalize db.ss into a multi-tx.ss that handles, queues, and merges multiple transactions.
+We are in the process of deeply changing Gerbil-Persist:
+- Replace LevelDB by an abstraction over key value stores (see kvs.ss, kvs-leveldb.ss).
+- Use sqlite as second backend, intended as default for embedding on Gambit-C (kvs-sqlite.ss).
+- Rewrite a kvs-based variant of db.ss handle, queue, and merge multiple transactions (multi-tx.ss).
 - Add a cache so that changes can be queued while the db is busy committing.
 - Make sure queries run against the cache for changes that haven't been committed yet.
-- Add first layer of encryption: encrypted content-addressed store on top of key value store (ecabs.ss)
-- Add second layer of encryption: btrees on top content-addressed store.
-- Add third layer of encryption: regular database schema on top of the above btrees.
-- In the future, support [PostgreSQL](https://www.postgresql.org/) on Gambit-C
-- In the future, Support IndexedDB on Gambit-JS.
+- Add first layer of encryption: encrypted content-addressed store atop kvs (ecabs.ss).
+- Add second layer of encryption: btrees on top content-addressed store (btree.ss).
+- Add third layer of encryption: user-given db schema using gerbil-poo type descriptors (schema.ss).
+- In the future, support [PostgreSQL](https://www.postgresql.org/) on Gambit-C.
+- In the future, Support [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) on Gambit-JS.
 
-TODO: Port btree's from CL https://github.com/danlentz/cl-btree
-to implement pure database indexes on top of (encrypted) key value store.
 
 ## Future Hopes
 
