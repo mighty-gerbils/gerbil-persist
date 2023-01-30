@@ -16,6 +16,8 @@
   (check-equal? (values->list {read-key K k1}) [v1 #t])
   {write-key K k1 v2}
   (check-equal? (values->list {read-key K k1}) [v2 #t])
+  {delete-key K k1}
+  (check-equal? (values->list {read-key K k1}) [#f #f])
   (void))
 
 (def kvs-sqlite-test
