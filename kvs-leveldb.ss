@@ -6,20 +6,17 @@
   :clan/path :clan/path-config
   :clan/persist/kvs)
 
+(export #t)
+
 (defstruct (KvsLeveldb Kvs)
   (batch-id batch batch-completion)
   constructor: :init!)
 
 (defmethod {:init! KvsLeveldb}
-  (lambda (self connection)
-    (struct-instance-init!
-     self connection
-     0 #f #f)))
-
-(def (kvs-leveldb-open path (opts (leveldb-default-options)))
-  (def abspath (ensure-absolute-path path persistent-directory))
-  (create-directory* (path-parent abspath))
-  (make-KvsLeveldb (leveldb-open abspath opts)))
+  (lambda (self path (opts (leveldb-default-options)))
+    (def abspath (ensure-absolute-path path persistent-directory))
+    (create-directory* (path-parent abspath))
+    (struct-instance-init! self (leveldb-open abspath opts) 0 #f #f)))
 
 (defmethod {begin-transaction KvsLeveldb}
   (lambda (self)
@@ -35,17 +32,19 @@
     (set! (KvsLeveldb-batch self) #f)
     (set! (KvsLeveldb-batch-completion self) #f)))
 
+(def leveldb-sync-write-options (leveldb-write-options sync: #f))
+
 (defmethod {commit-transaction KvsLeveldb}
   (lambda (self)
-    (assert! (not (KvsLeveldb-batch self)))
-    (leveldb-writebatch-clear (KvsLeveldb-batch self))
+    (assert! (KvsLeveldb-batch self))
+    (leveldb-write (Kvs-connection self) (KvsLeveldb-batch self) leveldb-sync-write-options)
     (set! (KvsLeveldb-batch self) #f)
     (set! (KvsLeveldb-batch-completion self) #f)))
 
 (defmethod {read-key KvsLeveldb}
   (lambda (K k)
-    (try (values (leveldb-get (Kvs-connection K) k) #t)
-         (catch leveldb-error? => (lambda (_) (values #f #f))))))
+    (def v (leveldb-get (Kvs-connection K) k))
+    (values v (and v #t))))
 
 (defmethod {write-key KvsLeveldb}
   (lambda (K k v)
