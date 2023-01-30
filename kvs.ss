@@ -11,8 +11,8 @@
 (def (raise-db-error where . what)
   (raise (make-db-error what [] where)))
 
-(defstruct Kvs
-  (connection))
+(defstruct Kvs (connection)
+  constructor: :init!)
 
 (defmethod {:init! Kvs}
   (lambda (self e) (struct-instance-init! self e)))

@@ -5,9 +5,12 @@
   :clan/path :clan/path-config
   :clan/persist/kvs)
 
+(export #t)
+
 (defstruct (KvsSql Kvs)
   (begin-tx-stmt commit-tx-stmt abort-tx-stmt
-   read-stmt write-stmt delete-stmt))
+   read-stmt write-stmt delete-stmt)
+  constructor: :init!)
 
 (defmethod {:init! KvsSql}
   (lambda (self connection begin-tx-stmt commit-tx-stmt abort-tx-stmt read-stmt write-stmt delete-stmt)
@@ -18,14 +21,14 @@
 (defmethod {commit-transaction KvsSql} (lambda (self) (sql-exec (KvsSql-commit-tx-stmt self))))
 
 (defmethod {read-key KvsSql}
-  (lambda (K k)
-    (def s (KvsSql-read-stmt K))
-    {bind s k}
+  (lambda (K key)
+    (def stmt (KvsSql-read-stmt K))
+    {bind stmt key}
     (try
-     (match {query-fetch s}
-       ((eq? #!void) (values {query-row s} #t))
+     (match {query-fetch stmt}
+       ((eq? #!void) (values {query-row stmt} #t))
        ((eq? iter-end) (values #f #f)))
-     (finally (sql-reset/clear s)))))
+     (finally (sql-reset/clear stmt)))))
 
 (defmethod {write-key KvsSql}
   (lambda (K k v)
@@ -45,19 +48,20 @@
 
 (defstruct (KvsSqlite KvsSql)
   (begin-tx-stmt commit-tx-stmt abort-tx-stmt
-   read-stmt write-stmt delete-stmt))
+   read-stmt write-stmt delete-stmt)
+  constructor: :init!)
 
-(defmethod {open KvsSqlite}
+(defmethod {:init! KvsSqlite}
   (lambda (self path (flags (fxior SQLITE_OPEN_READWRITE SQLITE_OPEN_CREATE)))
     (def abspath (ensure-absolute-path path persistent-directory))
     (create-directory* (path-parent abspath))
     (def connection (sqlite-open abspath flags))
+    (sql-eval connection "PRAGMA locking_mode = EXCLUSIVE")
     (sql-eval connection (string-append
-                          "PRAGMA locking_mode = EXCLUSIVE ;"
                           "CREATE TABLE IF NOT EXISTS kvs ( "
                           "key BLOB PRIMARY KEY, "
                           "value BLOB NOT NULL ) "
-                          "WITHOUT ROWID ;"))
+                          "WITHOUT ROWID"))
     (struct-instance-init!
      self connection
      (sql-prepare connection "BEGIN IMMEDIATE TRANSACTION")
