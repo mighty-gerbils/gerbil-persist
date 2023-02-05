@@ -6,6 +6,10 @@
 
 (export #t)
 
+(def current-db-connection (make-parameter #f))
+
+(def current-db-transaction (make-parameter #f))
+
 (defstruct (db-error <error>) ())
 
 (def (raise-db-error where . what)

@@ -56,7 +56,9 @@
     (def abspath (ensure-absolute-path path persistent-directory))
     (create-directory* (path-parent abspath))
     (def connection (sqlite-open abspath flags))
-    (sql-eval connection "PRAGMA locking_mode = EXCLUSIVE")
+    (sql-eval connection (string-append
+                          "PRAGMA locking_mode = EXCLUSIVE ; "
+                          "PRAGMA synchronous = FULL ; ")
     (sql-eval connection (string-append
                           "CREATE TABLE IF NOT EXISTS kvs ( "
                           "key BLOB PRIMARY KEY, "
@@ -69,4 +71,4 @@
      (sql-prepare connection "ROLLBACK TRANSACTION")
      (sql-prepare connection "SELECT value FROM kvs WHERE key = ?")
      (sql-prepare connection "INSERT INTO kvs (key, value) VALUES (?, ?) ON CONFLICT DO UPDATE SET value = excluded.value")
-     (sql-prepare connection "DELETE FROM kvs WHERE key = ?"))))
+     (sql-prepare connection "DELETE FROM kvs WHERE key = ?")))))
