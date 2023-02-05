@@ -204,9 +204,76 @@ then the user application must implement its own system of
 transactions, conflict-detection and rollback,
 on top of what the system provides.
 
-### Model Documentation TODO
+### Encryption Model
 
-- Describe our [encryption model](https://mukn.notion.site/Encrypted-Databases-a-Private-Low-Level-Storage-Model-582fd2775289465cb879d6acbfd7ff11).
+Our encryption model is explained in more details in this document: https://mukn.notion.site/Encrypted-Databases-a-Private-Low-Level-Storage-Model-582fd2775289465cb879d6acbfd7ff11
+
+We use row-based encryption, such that the database can be hosted by untrusted
+third parties each of whom may make their copy of the data unavailable, but
+may neither decode any of the data nor tamper with it.
+The only information they can extract is the size distribution of rows in
+the database at large and in each transaction (and even that could be reduced
+to overall size, at the cost of padding and chunking).
+
+Row-based encryption means that transactions only require incremental sending
+of data proportional to the amount of change effected, rather than encrypting
+and sending the entire database as with a simple file-level encryption.
+Also, unlike naive block-level encryption, row-based encryption allows for
+salt to be changed with every update to a row, preventing trivial cryptanalysis
+by the storage host XORing the multiple versions of a same block.
+
+The usage model is that the user has a copy of the entire database locally,
+but uses remote backups that he doesn't fully trust,
+except to keep his data available.
+If the user loses his local copy, and/or once in a while
+just to verify the integrity of remote copies, the user will download
+the entirety of the database from one and/or a collection of his providers,
+and check that the root node is indeed the most recent version,
+and that the rest of the data is correctly content-addressed from that root.
+The root node also includes a checksum of everything
+(including the rest of the root node).
+All data is encrypted using a symmetric key derived from the user passphrase
+used as the seed of a suitable KDF (key derivation function).
+
+(The root node could also include a signature using an asymmetric key derived
+from the same seed, but I think this will be redundant and not needed.)
+
+### Low-level Data Representation
+
+Our encryption model allows for content-addressing of pure persistent data
+structures plus a number of mutable rows that start with some random salt
+that changes at every update. For integrity-preservation purposes,
+a hash of the content of all mutable rows is kept in the root node.
+The rest of the data is accessed from the root node via the usual
+content-addressing mechanism, that has a built-in integrity mechanism.
+
+The integrity checker also verifies that no extra rows are present in the
+database: unreferenced rows are deleted by a reference counting
+garbage collector, which always work since the content-addressing model
+does not allow for cycles in the content-addressing directed graph;
+cyclic data structures can still be represented indirectly using integer
+indices as explicit pointers into an array. The reference counts themselves
+need only be explicitly stored when strictly larger than one, and
+can be stored in a separate table: a count of zero is represented
+by the row being absent, and a count of one by the row being present but
+its reference counting entry being absent from the counting table.
+Each index, each user-defined table, uses a hash of its type and name
+descriptor as part of its encryption salt, thereby avoiding undesired
+collisions, including with the reference counting table itself.
+
+Tables will be represented with B-tree of order 16 (according to Knuth's
+definition: maximum number of children in a non-root node), wherein short
+entries (7 256-bit words or less) are inlined (if their type allows for
+inlining) and larger entries are content-addressed.
+If a deterministic encoding is preferred, a patricia tree may be used instead,
+there again with or without inlining of leaf nodes.
+
+The top-level entry is stored checksummed and encrypted with a random salt
+at a storage key that also serves as checksum of the database master key.
+The cleartext stored is a structure containing a timestamp and transaction count
+that make it possible to identify which copy is most up-to-date,
+content-addressed links to a schema descriptor, a top-level object,
+and a table of indexes (including the reference counting table).
 
 ### Pre-Commit Hook
 
@@ -222,7 +289,11 @@ that may do the following:
 
 This code started as a port from my OCaml library `legilogic_lib`,
 refactored, enhanced, and rewritten again.
-Notably, in the OCaml variant, every function was defined twice,
+That OCaml library was already written to support multiple concurrent
+activities exchanging messages with blockchain applications,
+though the persistence model hasn't been clarified until much later.
+
+In the OCaml variant, every function was defined twice,
 as a client half sending a request and some server spaghetti code
 processing it, with some data in between and plenty of promises
 to communicate (like Gerbil `std/misc/completion`, just separating the
@@ -258,15 +329,16 @@ In particular we are (1) abstracting away the underlying key-value store, and
 
 ### Short term planned changes
 - Rewrite a kvs-based variant of db.ss handle, queue, and merge multiple transactions (kvs-mux.ss).
-- Add a cache so that changes can be queued while the db is busy committing.
-- Make sure queries run against the cache for changes that haven't been committed yet.
 - Add second layer of encryption: btrees on top content-addressed store (btree.ss).
 - Add third layer of encryption: user-given db schema using gerbil-poo type descriptors (schema.ss).
-- Support [PostgreSQL](https://www.postgresql.org/) on Gambit-C.
+
+### Medium term planned changes
 - Support [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) on Gambit-JS.
+- Implement asynchronous commits and transaction waves with a cache.
 - Support synchronous data replication on multiple remote IPFS providers.
 
 ### Long term unplanned hopes
+- Support [PostgreSQL](https://www.postgresql.org/) on Gambit-C.
 - Support [CockroachDB](https://www.cockroachlabs.com/) as a replicated key-value store,
 - Implement our own shared-memory object database in the style of
-[manardb](https://github.com/danlentz/manardb).
+  [manardb](https://github.com/danlentz/manardb).
