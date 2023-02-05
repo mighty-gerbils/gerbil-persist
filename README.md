@@ -1,17 +1,24 @@
 # Gerbil-persist
 
 Gerbil-persist is a package to persist concurrent processes as well as data.
-It currently uses [LevelDB](https://github.com/google/leveldb) as a trivial key-value store underneath.
+It currently uses [LevelDB](https://github.com/google/leveldb)
+as a trivial key-value store underneath.
 However, we are moving towards abstracting away the underlying store, and
-supporting [Sqlite](https://www.sqlite.org/index.html) as default instead on the Gambit C,
-and [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) on the Gambit JS.
+instead supporting [Sqlite](https://www.sqlite.org/index.html)
+as default on Gambit C, and
+[IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
+on Gambit JS.
 
 See [db.ss](db.ss) for what is *currently* the main database interface.
+Note that it does *not* directly correspond to the persistence model
+described below, but a previous unencrypted iteration toward that goal
+starting from more traditional models.
 
 ## Copyright and License
 
 Copyright 2020-2023 Mutual Knowledge Systems, Inc. All rights reserved.
-Gerbil-Persist is distributed under the Apache License, version 2.0. See the file [LICENSE](LICENSE).
+Gerbil-Persist is distributed under
+the Apache License, version 2.0. See the file [LICENSE](LICENSE).
 
 ## Our Persistence Model
 
@@ -206,7 +213,8 @@ on top of what the system provides.
 
 ### Encryption Model
 
-Our encryption model is explained in more details in this document: https://mukn.notion.site/Encrypted-Databases-a-Private-Low-Level-Storage-Model-582fd2775289465cb879d6acbfd7ff11
+Our encryption model is explained in more details in this document:
+https://mukn.notion.site/Encrypted-Databases-a-Private-Low-Level-Storage-Model-582fd2775289465cb879d6acbfd7ff11
 
 We use row-based encryption, such that the database can be hosted by untrusted
 third parties each of whom may make their copy of the data unavailable, but
@@ -270,7 +278,7 @@ there again with or without inlining of leaf nodes.
 
 The top-level entry is stored checksummed and encrypted with a random salt
 at a storage key that also serves as checksum of the database master key.
-The cleartext stored is a structure containing a timestamp and transaction count
+The cleartext is a structure containing a timestamp and transaction count
 that make it possible to identify which copy is most up-to-date,
 content-addressed links to a schema descriptor, a top-level object,
 and a table of indexes (including the reference counting table).
@@ -329,7 +337,7 @@ In particular we are (1) abstracting away the underlying key-value store, and
 
 ### Short term planned changes
 - Rewrite a kvs-based variant of db.ss handle, queue, and merge multiple transactions (kvs-mux.ss).
-- Add second layer of encryption: btrees on top content-addressed store (btree.ss).
+- Add second layer of encryption: btrees on top of content-addressed store (btree.ss).
 - Add third layer of encryption: user-given db schema using gerbil-poo type descriptors (schema.ss).
 
 ### Medium term planned changes
