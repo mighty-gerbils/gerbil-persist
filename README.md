@@ -22,7 +22,7 @@ the Apache License, version 2.0. See the file [LICENSE](LICENSE).
 
 ## Our Persistence Model
 
-### High-Level Intuition
+### In a Nutshell: the High-Level Intuition
 
 For those familiar with the relevant concepts, our Persistence model is
 designed to be the underlying storage layer to an Orthogonal Persistent system
