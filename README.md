@@ -22,6 +22,17 @@ the Apache License, version 2.0. See the file [LICENSE](LICENSE).
 
 ## Our Persistence Model
 
+### High-Level Intuition
+
+For those familiar with the relevant concepts, our Persistence model is
+designed to be the underlying storage layer to an Orthogonal Persistent system
+while embodying the paradigm of content-addressed (merkleized) data storage.
+
+As for the implementation, we create a least-common denominator abstraction
+reducing any of the most ubiquitous databases to a mere key value store,
+valued only for its key "ACID" properties. We add a row-level encryption layer,
+and we rebuild all the rest of the functionality we need on top of that.
+
 ### Persistence
 
 Persistence means that in case the system stops then is restarted,
@@ -205,10 +216,11 @@ all modifications of all user processes are rolled back and
 all user processes are reset to the state they were at
 as of the latest committed transaction.
 
-If somehow, the application calls for concurrent access to some resources
-and rollback of whichever user process tries to access it second,
+If somehow, the application calls for concurrent access to some resources,
+speculative evaluation under uncertain conflict detection and resolution, and
+rollback of whichever user process loses a dynamically detected conflict,
 then the user application must implement its own system of
-transactions, conflict-detection and rollback,
+transactions, speculation, conflict detection and resolution, rollback, etc.,
 on top of what the system provides.
 
 ### Encryption Model
@@ -229,6 +241,8 @@ and sending the entire database as with a simple file-level encryption.
 Also, unlike naive block-level encryption, row-based encryption allows for
 salt to be changed with every update to a row, preventing trivial cryptanalysis
 by the storage host XORing the multiple versions of a same block.
+
+### Verifiable Integrity
 
 The usage model is that the user has a copy of the entire database locally,
 but uses remote backups that he doesn't fully trust,
@@ -281,7 +295,8 @@ at a storage key that also serves as checksum of the database master key.
 The cleartext is a structure containing a timestamp and transaction count
 that make it possible to identify which copy is most up-to-date,
 content-addressed links to a schema descriptor, a top-level object,
-and a table of indexes (including the reference counting table).
+and a table of indexes, including the reference counting table and
+an index of mutable cells (if we allow any beside the top-level entry).
 
 ### Pre-Commit Hook
 
@@ -343,7 +358,9 @@ In particular we are (1) abstracting away the underlying key-value store, and
 ### Medium term planned changes
 - Support [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) on Gambit-JS.
 - Implement asynchronous commits and transaction waves with a cache.
-- Support synchronous data replication on multiple remote IPFS providers.
+- Support synchronous data replication on multiple remote IPFS providers
+  (like [web3.storage](https://web3.storage), or any other known
+  [IPFS pinning service](https://sourceforge.net/software/ipfs-pinning/))
 
 ### Long term unplanned hopes
 - Support [PostgreSQL](https://www.postgresql.org/) on Gambit-C.
