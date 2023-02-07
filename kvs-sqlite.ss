@@ -20,31 +20,28 @@
 (defmethod {abort-transaction KvsSql} (lambda (self) (sql-exec (KvsSql-abort-tx-stmt self))))
 (defmethod {commit-transaction KvsSql} (lambda (self) (sql-exec (KvsSql-commit-tx-stmt self))))
 
+(defrule (with-statement (var stmt args ...) body ...)
+  (let ((var stmt))
+    (display "foo\n")
+    (try {bind var args ...} body ...
+      (finally (sql-reset/clear stmt)))))
+
 (defmethod {read-key KvsSql}
   (lambda (K key)
-    (def stmt (KvsSql-read-stmt K))
-    {bind stmt key}
-    (try
-     (match {query-fetch stmt}
-       ((eq? #!void) (values {query-row stmt} #t))
-       ((eq? iter-end) (values #f #f)))
-     (finally (sql-reset/clear stmt)))))
+    (with-statement (s (KvsSql-read-stmt K) key)
+      (match {query-fetch s}
+        ((eq? #!void) (values {query-row s} #t))
+        ((eq? iter-end) (values #f #f))))))
 
 (defmethod {write-key KvsSql}
   (lambda (K k v)
-    (def s (KvsSql-write-stmt K))
-    {bind s k v}
-    (try
-     {exec s}
-     (finally (sql-reset/clear s)))))
+    (with-statement (s (KvsSql-write-stmt K) k v)
+      {exec s})))
 
 (defmethod {delete-key KvsSql}
   (lambda (K k)
-    (def s (KvsSql-delete-stmt K))
-    {bind s k}
-    (try
-     {exec s}
-     (finally (sql-reset/clear s)))))
+    (with-statement (s (KvsSql-delete-stmt K) k)
+      {exec s})))
 
 (defstruct (KvsSqlite KvsSql)
   (begin-tx-stmt commit-tx-stmt abort-tx-stmt
@@ -58,7 +55,7 @@
     (def connection (sqlite-open abspath flags))
     (sql-eval connection (string-append
                           "PRAGMA locking_mode = EXCLUSIVE ; "
-                          "PRAGMA synchronous = FULL ; ")
+                          "PRAGMA synchronous = FULL ; "))
     (sql-eval connection (string-append
                           "CREATE TABLE IF NOT EXISTS kvs ( "
                           "key BLOB PRIMARY KEY, "
@@ -71,4 +68,4 @@
      (sql-prepare connection "ROLLBACK TRANSACTION")
      (sql-prepare connection "SELECT value FROM kvs WHERE key = ?")
      (sql-prepare connection "INSERT INTO kvs (key, value) VALUES (?, ?) ON CONFLICT DO UPDATE SET value = excluded.value")
-     (sql-prepare connection "DELETE FROM kvs WHERE key = ?")))))
+     (sql-prepare connection "DELETE FROM kvs WHERE key = ?"))))
