@@ -25,8 +25,8 @@ the Apache License, version 2.0. See the file [LICENSE](LICENSE).
 ### In a Nutshell: the High-Level Intuition
 
 For those familiar with the relevant concepts, our Persistence model is
-designed to be the underlying storage layer to an Orthogonal Persistent system
-while embodying the paradigm of content-addressed (merkleized) data storage.
+designed to be the storage layer underlying a system with Orthogonal Persistence
+while embodying the paradigm of content-addressed (merkleized) data.
 
 As for the implementation, we create a least-common denominator abstraction
 reducing any of the most ubiquitous databases to a mere key value store,
@@ -200,6 +200,9 @@ Reading and writing then happen using the current wave, which
 either directly accesses the database, or only the cache, depending on
 which stage this wave is at.
 
+Especially with synchronous remote replicas, you'll want a lot of successive waves
+being pipelined in parallel.
+
 ### Conflicts and Rollbacks
 
 Our persistence system assumes that it has exclusive control on the
@@ -348,10 +351,12 @@ In particular we are (1) abstracting away the underlying key-value store, and
 ### Basically done
 - Replace LevelDB by an abstraction over key value stores (see kvs.ss, kvs-leveldb.ss).
 - Use sqlite as second backend, intended as default for embedding on Gambit-C (kvs-sqlite.ss).
-- Add first layer of encryption: encrypted content-addressed store atop kvs (ecabs.ss).
+
+### Needs testing
+- Add first layer of encryption: encrypted byte store atop kvs (ebs.ss).
+- Rewrite a kvs-based variant of db.ss handle, queue, and merge multiple transactions (kvs-mux.ss).
 
 ### Short term planned changes
-- Rewrite a kvs-based variant of db.ss handle, queue, and merge multiple transactions (kvs-mux.ss).
 - Add second layer of encryption: btrees on top of content-addressed store (btree.ss).
 - Add third layer of encryption: user-given db schema using gerbil-poo type descriptors (schema.ss).
 
