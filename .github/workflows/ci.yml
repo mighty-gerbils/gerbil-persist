@@ -1,0 +1,23 @@
+name: CI
+
+on: [push, pull_request]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build_job:
+    runs-on: ubuntu-latest
+    container: mukn/glow:devel
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v1
+      - name: Configure git on docker
+        # See https://github.com/actions/runner/issues/2033
+        run: git config --global --add safe.directory $GITHUB_WORKSPACE
+      - name: Build and run the unit-tests
+        run: ./unit-tests.ss build-and-test
