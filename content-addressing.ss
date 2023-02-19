@@ -74,7 +74,7 @@
 ;; This allows you to define all your interfaces independently from which digest function will be used,
 ;; but a given poo interface should be used in one context only, they should be initialized together,
 ;; you may want to statically clone and override in some cases, etc.
-(.def (CurrentDigesting @ []) ;; inherit: Digestable
+(.def (CurrentDigesting @ [Digestable])
   .digesting: (current-content-addressing))
 
 ;; : Bytes <- Digest ?ContentAddressing
@@ -102,7 +102,7 @@
   (lambda (x tx)
     (def b (.bytes<- x))
     (def d (digest<-bytes b .digesting))
-    (def k (content-addressing-key (d .digesting)))
+    (def k (content-addressing-key d .digesting))
     (unless (db-key? k tx)
       (make-dependencies-persistent @ x tx)
       (db-put! k b tx))))

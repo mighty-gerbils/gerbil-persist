@@ -22,7 +22,6 @@
 
 (defrule (with-statement (var stmt args ...) body ...)
   (let ((var stmt))
-    (display "foo\n")
     (try {bind var args ...} body ...
       (finally (sql-reset/clear stmt)))))
 

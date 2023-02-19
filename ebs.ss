@@ -1,9 +1,13 @@
 ;; Encrypted Byte Store
 ;; TODO: have a competent cryptographer review.
 ;; (Thanks to Alipha and maroon from IRC libera.chat #crypto for help with the design.)
+;; TODO: merge context with that from content-addressing.ss
+;; TODO: Pad data under some minimum size. Chunk data over some maximum size.
 
-(import :std/crypto/libcrypto :std/crypto/cipher
+(import :std/crypto/libcrypto :std/crypto/cipher :std/crypto/etc
         :clan/crypto/keccak)
+
+(export #t)
 
 (defstruct EncryptionContext
   (encrypt ;; Bytes <- IV Bytes ;; symmetric encryption (cut encrypt (make-cipher e) masterkey <> <>)
@@ -23,9 +27,10 @@
       cipher: (cipher (let (cipher (EVP_aes_256_ctr)) (cut make-cipher cipher)))
       digest: (digest keccak256<-bytes)
       iv-len: (iv-len 16)) ;; length of IV for cipher
-  (def ca-key-salt (digest (u8vector-append masterkey (string->bytes "content-addressed-key"))))
-  (def ca-iv-salt (digest (u8vector-append masterkey (string->bytes "content-addressed-iv"))))
-  (def ia-key-salt (digest (u8vector-append masterkey (string->bytes "intent-addressed-key"))))
+  (def (make-salt str) (digest (u8vector-append masterkey (string->bytes str))))
+  (def ca-key-salt (make-salt "content-addressed-key"))
+  (def ca-iv-salt (make-salt "content-addressed-initialization-vector"))
+  (def ia-key-salt (make-salt "intent-addressed-key"))
   (make-EncryptionContext
     (cut encrypt (cipher) masterkey <> <>)
     (cut decrypt (cipher) masterkey <> <>)
@@ -51,19 +56,17 @@
     {read-decode-check-key
      kvs key (cut decrypt iv <>) (lambda (bytes) (equal? hash (digest bytes)))}))
 
-;; Store bytes at an intent identified by some hash
-(def (store-intent-addressed-bytes kvs crypt-ctx hash bytes)
-  (with ((EncryptionContext encrypt _ iv-len _ _ derive-ia-key) crypt-ctx)
-    (def key (derive-ia-key hash))
+;; Store bytes at an intent identified by some hash or other u8vector
+(def (store-intent-addressed-bytes kvs crypt-ctx intent bytes)
+  (with ((EncryptionContext encrypt _ iv-len _ _ _ derive-ia-key) crypt-ctx)
+    (def key (derive-ia-key intent))
     (def iv (random-bytes iv-len))
     (def value (encrypt iv bytes))
-    {write-key kvs key (append-bytes iv value)}
-    hash))
+    {write-key kvs key (u8vector-append iv value)}))
 
-(def (load-intent-addressed-bytes kvs crypt-ctx hash (valid? true))
+(def (load-intent-addressed-bytes kvs crypt-ctx intent (valid? true))
   (with ((EncryptionContext _ decrypt iv-len _ _ _ derive-ia-key) crypt-ctx)
-    (def key (derive-ia-key hash))
-    (def iv (derive-iv hash))
+    (def key (derive-ia-key intent))
     {read-decode-check-key
      kvs key (lambda (iv+ct)
                (def iv (subu8vector iv+ct 0 iv-len))
