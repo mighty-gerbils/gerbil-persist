@@ -4,3 +4,9 @@
 (import :clan/testing)
 (init-test-environment!)
 (import :clan/persist/version)
+
+(define-entry-point (build-and-test)
+  (help: "Run all build and test commands" getopt: [])
+  (run-process/batch ["./build.ss"])
+  (run-process/batch ["./unit-tests.ss"])
+  (run-process/batch ["./unit-tests.ss" "integration"]))
