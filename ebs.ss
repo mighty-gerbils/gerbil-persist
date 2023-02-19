@@ -1,8 +1,9 @@
 ;; Encrypted Byte Store
-;; TODO: have a competent cryptographer review.
-;; (Thanks to Alipha and maroon from IRC libera.chat #crypto for help with the design.)
-;; TODO: merge context with that from content-addressing.ss
-;; TODO: Pad data under some minimum size. Chunk data over some maximum size.
+;; Thanks to Alipha and maroon from IRC libera.chat #crypto for help with the design.
+;; TODO: Merge context with that from content-addressing.ss
+;; TODO: Optionally chunk data over some maximum size, e.g. 64KB, 4KB or 1KB.
+;; TODO: Optionally pad data under some minimum size. e.g. 32B, 1KB or 4KB.
+;; TODO: Have a competent cryptographer review.
 
 (import :std/crypto/libcrypto :std/crypto/cipher :std/crypto/etc
         :clan/crypto/keccak)

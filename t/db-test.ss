@@ -1,4 +1,4 @@
-(export db-integrationtest)
+(export db-test)
 
 (import
   :gerbil/gambit/random
@@ -8,8 +8,8 @@
   :clan/concurrency :clan/number :clan/path-config
   ../db)
 
-(def db-integrationtest
-  (test-suite "integration test for persist/db"
+(def db-test
+  (test-suite "test for persist/db"
     (test-case "open close db twice"
       (prn 1)
       (def c (open-db-connection "testdb"))

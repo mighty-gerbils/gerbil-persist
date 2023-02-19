@@ -60,7 +60,7 @@
     (test-case "proof-inconsistent"
       (check-exception (F .validate-proof (F .digest<- trie-100) (F .leaf 42) bad-merkle-path) true))))
 
-(def merkle-trie-integrationtest
+(def merkle-trie-test
   (test-suite "integration test for persist/merkle-trie"
     (init-test-random-source!)
     (with-db-connection (c "testdb")
