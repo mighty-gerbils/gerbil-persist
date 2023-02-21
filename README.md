@@ -351,18 +351,21 @@ In particular we are (1) abstracting away the underlying key-value store, and
 ### Basically done
 - Replace LevelDB by an abstraction over key value stores (see kvs.ss, kvs-leveldb.ss).
 - Use sqlite as second backend, intended as default for embedding on Gambit-C (kvs-sqlite.ss).
+- Add first layer of encryption: encrypted byte store atop kvs (ebs.ss).
 
 ### Needs testing
-- Add first layer of encryption: encrypted byte store atop kvs (ebs.ss).
 - Rewrite a kvs-based variant of db.ss handle, queue, and merge multiple transactions (kvs-mux.ss).
 
 ### Short term planned changes
 - Add second layer of encryption: btrees on top of content-addressed store (btree.ss).
 - Add third layer of encryption: user-given db schema using gerbil-poo type descriptors (schema.ss).
+- Add proper support for reference counting / linear data structures
 
 ### Medium term planned changes
 - Support [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) on Gambit-JS.
 - Implement asynchronous commits and transaction waves with a cache.
+- Implement persistent bytecode interpreter (based on the VM from SICP? Chibi? TinyScheme? Guile? other?)
+- Implement compiler for persistent variant of Scheme
 - Support synchronous data replication on multiple remote IPFS providers
   (like [web3.storage](https://web3.storage), or any other known
   [IPFS pinning service](https://sourceforge.net/software/ipfs-pinning/))
@@ -372,3 +375,4 @@ In particular we are (1) abstracting away the underlying key-value store, and
 - Support [CockroachDB](https://www.cockroachlabs.com/) as a replicated key-value store,
 - Implement our own shared-memory object database in the style of
   [manardb](https://github.com/danlentz/manardb).
+- Support synchronous data replication on [EthSwarm](https://www.ethswarm.org/) as well as IPFS.

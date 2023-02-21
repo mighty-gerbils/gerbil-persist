@@ -1,5 +1,12 @@
 # Persistent Concurrent Activities
 
+_Orthogonal Persistence_: You bind variable x to 42, but then some "youths"
+steal your laptop and orcs raze your datacenter to the ground. So you move to
+a safer place and enter your passphrase in a new laptop, the system downloads
+backup copies from redundant datacenters on multiple other continents, and
+variable x is still bound to 42, yet not one single instructions in any of
+your software ever had to even mention anything about storage and retrieval.
+
 ## Some laws of persistent concurrent activities
 
   1. Activities persist data in *transactions*. Transactions must be short
