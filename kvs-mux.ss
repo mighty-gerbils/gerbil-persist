@@ -3,7 +3,6 @@
 (export #t)
 (import
   :gerbil/gambit/threads
-  :std/db/leveldb
   :std/assert
   :std/misc/completion :std/misc/list :std/misc/number
   :std/sugar

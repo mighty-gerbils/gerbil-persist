@@ -4,6 +4,12 @@
 ;; TODO: Optionally chunk data over some maximum size, e.g. 64KB, 4KB or 1KB.
 ;; TODO: Optionally pad data under some minimum size. e.g. 32B, 1KB or 4KB.
 ;; TODO: Have a competent cryptographer review.
+;; TODO: allow use of alternative digest function to compute content-address hash;
+;; TODO: maybe use a hash prefix to distinguish digest functions? See IPLD.
+;; TODO: for user capabilities, prepend a per-domain prefix to the intent-addressed data;
+;; TODO: do not allow applications to see the reference counts for their data, or fail to update them.
+;; TODO: do allow applications to share content-addressed data,
+;; TODO: without detecting if anyone else is presently sharing or not.
 
 (import :std/crypto/libcrypto :std/crypto/cipher :std/crypto/etc
         :clan/crypto/keccak)

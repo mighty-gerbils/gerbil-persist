@@ -74,7 +74,7 @@ once assembled into a database transaction, such that
 processes can be suitably restored from the resulting state.
 
 The linearization constraint could conceivably be relaxed somewhat
-by having separate transactions and a clever locking mechanism,
+by having separate transactions and a clever locking mechanism;
 but such elaborate strategies would work neither
 on the simple key value stores that we want to support as backends,
 nor with the simple validation strategy we intend to use (see below).
@@ -149,6 +149,11 @@ that ensures changes are committed in a timely manner, rather than accumulate
 until a giant pause is necessary to commit them all, or worse,
 memory runs out, the process is killed, and all is lost before
 they had a chance of being committed.
+
+However, the user *may* assume that changes to the database *will*
+contain an atomic set of changes, such that no change is included
+without all the previous changes in the creation sequence.
+
 
 ### Transaction Schedule
 
@@ -364,7 +369,8 @@ In particular we are (1) abstracting away the underlying key-value store, and
 ### Medium term planned changes
 - Support [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) on Gambit-JS.
 - Implement asynchronous commits and transaction waves with a cache.
-- Implement persistent bytecode interpreter (based on the VM from SICP? Chibi? TinyScheme? Guile? other?)
+- Implement persistent bytecode interpreter
+  (based on the VM from SICP? Chibi? TinyScheme? Guile? cbpv? other?)
 - Implement compiler for persistent variant of Scheme
 - Support synchronous data replication on multiple remote IPFS providers
   (like [web3.storage](https://web3.storage), or any other known
