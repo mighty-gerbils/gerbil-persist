@@ -8,8 +8,13 @@
 ;;   gxpkg install github.com/fare/gerbil-crypto
 ;;   gxpkg install github.com/fare/gerbil-poo
 
-(import :clan/building)
-
+(import :std/misc/process :clan/building :clan/multicall)
 (init-build-environment!
  name: "Gerbil-persist"
  deps: '("clan" "clan/poo" "clan/crypto"))
+
+(define-entry-point (build-and-test)
+  (help: "Run all build and test commands" getopt: [])
+  (compile)
+  (run-process/batch ["./unit-tests.ss"])
+  (run-process/batch ["./unit-tests.ss" "integration"]))

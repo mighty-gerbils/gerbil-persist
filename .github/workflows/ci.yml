@@ -20,4 +20,4 @@ jobs:
         # See https://github.com/actions/runner/issues/2033
         run: git config --global --add safe.directory $GITHUB_WORKSPACE
       - name: Build and run the unit-tests
-        run: ./unit-tests.ss build-and-test
+        run: ./build.ss build-and-test
