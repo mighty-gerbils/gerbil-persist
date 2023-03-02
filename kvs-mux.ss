@@ -47,6 +47,7 @@
 (def (call-with-db-lock fun (db (current-db-connection)))
   (with-db-lock (db) (fun db)))
 
+#|
 (defmethod {close KvsMux}
   (lambda (self)
     (with-db-lock (self)
@@ -290,3 +291,4 @@
         open-transaction call-with-tx call-with-committed-tx close-transaction
         commit-transaction register-commit-hook! db-manager finalize-batch!
         get-batch-id db-get db-key? db-put! db-put-many! db-delete!)
+|#
