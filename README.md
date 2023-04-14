@@ -1,18 +1,37 @@
 # Gerbil-persist
 
+Ever had your browser cache purged? Ever changed browser?
+Got your laptop stolen? Had Russian orcs bomb your computers?
+All in the midst of a blockchain interaction with valuable assets at stake?
+With gerbil-persist, the precious private off-chain data
+based on which you manage your tokens will persist
+onto your next browser session on your next computer in the next country.
+
+Your "decentralized application" or "wallet" will persist their data,
+completely encrypted, onto the Cloud—without the application having to add a
+single line of code to handle persistence, indeed with its having to explicitly
+add lines of code to locally disable persistence where performance demands it.
+Storage providers (whether centralized, or decentralized on Swarm or Filecoin)
+will not be able to decrypt any data without the master key.
+Row-level encryption will ensure data can be updated in increments
+proportional in size to the change (plus logarithmic indexes).
+Indexes are maintained entirely client-side, and
+servers only see a unindexed random-looking key value store.
+Data replication will add robustness at the expense of latency.
+Replication configuration can be stored in a DHT (e.g. ENS or other contract).
+
 Gerbil-persist is a package to persist concurrent processes as well as data.
-It currently uses [LevelDB](https://github.com/google/leveldb)
-as a trivial key-value store underneath.
-However, we are moving towards abstracting away the underlying store, and
-instead supporting [Sqlite](https://www.sqlite.org/index.html)
+It aims at implementing robust orthogonal persistence as summarized above and
+detailed below, but the current code is slowly evolving from a previous
+unencrypted iteration of a more traditional model.
+
+The *current* working code is in [db.ss](db.ss), and uses
+[LevelDB](https://github.com/google/leveldb) as underlying key-value store.
+However, we are moving towards abstracting away the underlying store,
+and instead supporting [Sqlite](https://www.sqlite.org/index.html)
 as default on Gambit C, and
 [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
 on Gambit JS.
-
-See [db.ss](db.ss) for what is *currently* the main database interface.
-Note that it does *not* directly correspond to the persistence model
-described below, but a previous unencrypted iteration toward that goal
-starting from more traditional models.
 
 ## Copyright and License
 
@@ -22,7 +41,7 @@ the Apache License, version 2.0. See the file [LICENSE](LICENSE).
 
 ## Our Persistence Model
 
-### In a Nutshell: the High-Level Intuition
+### Our Model In a Nutshell
 
 For those familiar with the relevant concepts, our Persistence model is
 designed to be the storage layer underlying a system with Orthogonal Persistence
@@ -370,7 +389,7 @@ In particular we are (1) abstracting away the underlying key-value store, and
 - Support [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) on Gambit-JS.
 - Implement asynchronous commits and transaction waves with a cache.
 - Implement persistent bytecode interpreter
-  (based on the VM from SICP? Chibi? TinyScheme? Guile? cbpv? other?)
+  (based on the VM from SICP? Chibi? TinyScheme? Guile? cbpv? Ribbit? other?)
 - Implement compiler for persistent variant of Scheme
 - Support synchronous data replication on multiple remote IPFS providers
   (like [web3.storage](https://web3.storage), or any other known
@@ -382,3 +401,13 @@ In particular we are (1) abstracting away the underlying key-value store, and
 - Implement our own shared-memory object database in the style of
   [manardb](https://github.com/danlentz/manardb).
 - Support synchronous data replication on [EthSwarm](https://www.ethswarm.org/) as well as IPFS.
+
+## Bibliography
+
+* [Ribbit](https://github.com/udem-dlteam/ribbit#research-and-papers)
+* [Scope Sets](https://users.cs.utah.edu/plt/scope-sets/)
+
+* [The taming of the B-trees](https://www.scylladb.com/2021/11/23/the-taming-of-the-b-trees/)
+* [Eytzinger Binary Search](https://algorithmica.org/en/eytzinger)
+* [TreeLine: An Update-In-Place Key-Value Store for Modern Storage (2023)](https://www.vldb.org/pvldb/vol16/p99-yu.pdf)
+* [MyRocks: LSM-Tree Database Storage Engine Serving Facebook's Social Graph (2020)](https://www.vldb.org/pvldb/vol13/p3217-matsunobu.pdf)
