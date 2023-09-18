@@ -1,11 +1,11 @@
 ;; Persisting Data
 (export #t)
 (import
-  (for-syntax :clan/syntax)
+  (for-syntax :std/stxutil)
   :gerbil/gambit/bytes :gerbil/gambit/ports :gerbil/gambit/threads
   :std/assert :std/format
   :std/misc/completion :std/misc/hash
-  :std/sugar
+  :std/sugar :std/values
   :clan/base :clan/concurrency :clan/string
   :clan/poo/object :clan/poo/mop :clan/poo/io :clan/poo/type
   :clan/debug :clan/poo/debug
