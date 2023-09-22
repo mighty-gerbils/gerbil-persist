@@ -17,12 +17,12 @@
       (def intent (string->bytes "let there be light"))
       (def h ((EncryptionContext-digest C) data))
       {begin-transaction K}
-      (check-exception (load-content-addressed-bytes K C h) db-error?)
+      (check-exception (load-content-addressed-bytes K C h) DbError?)
       (check-equal? (store-content-addressed-bytes K C data) h)
       {commit-transaction K}
       {begin-transaction K}
       (check-equal? (load-content-addressed-bytes K C h) data)
-      (check-exception (load-intent-addressed-bytes K C intent) db-error?)
+      (check-exception (load-intent-addressed-bytes K C intent) DbError?)
       (check-equal? (store-intent-addressed-bytes K C intent data) (void))
       {commit-transaction K}
       {begin-transaction K}

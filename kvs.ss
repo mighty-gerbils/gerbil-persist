@@ -1,7 +1,8 @@
 ;;;; Key Value Store Interface
 
 (import
-  :std/db/dbi :std/db/sqlite :std/error :std/sugar :std/misc/list-builder
+  :std/error
+  :std/db/dbi :std/db/sqlite :std/sugar :std/misc/list-builder
   :clan/base)
 
 (export #t)
@@ -10,10 +11,10 @@
 
 (def current-db-transaction (make-parameter #f))
 
-(defstruct (db-error <error>) ())
+(deferror-class DbError ())
 
-(def (raise-db-error where . what)
-  (raise (make-db-error what [] where)))
+(def (raise-db-error where message . irritants)
+  (raise (make-DbError message where: where irritants: irritants)))
 
 (defstruct Kvs (connection)
   constructor: :init!)
@@ -30,7 +31,7 @@
   (lambda (self key decode check?)
     (defvalues (bytes present?) {read-key self key})
     (unless present?
-      (raise-db-error 'read-decode-check-key 'kvs-key-absent key))
+      (raise-db-error 'read-decode-check-key "kvs key absent" key))
     (def value (decode bytes))
     (unless (check? value)
       (error 'kvs-data-tampering "Database was tampered with" self key))

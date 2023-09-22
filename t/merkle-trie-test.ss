@@ -2,10 +2,10 @@
 
 (import
   :gerbil/gambit/random
-  :std/format :std/misc/list :std/misc/repr
+  :std/format :std/misc/list :std/misc/number :std/misc/repr
   :std/sugar :std/test :std/text/hex
   :clan/assert
-  :clan/concurrency :clan/number :clan/path-config
+  :clan/concurrency :clan/path-config
   :clan/testing
   :clan/poo/object :clan/poo/type :clan/poo/number :clan/poo/trie
   :clan/poo/t/table-testing

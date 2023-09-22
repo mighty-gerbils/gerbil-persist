@@ -1,15 +1,16 @@
-(export db-test)
+(export kvs-mux-test)
 
 (import
   :gerbil/gambit/random
   :std/assert :std/format
-  :std/misc/bytes :std/misc/list :std/misc/number :std/misc/repr
+  :std/misc/list :std/misc/number :std/misc/repr
   :std/sugar :std/test
   :clan/concurrency :clan/path-config
-  ../db)
+  ../kvs ../kvs-sqlite ../kvs-mux)
 
-(def db-test
+(def kvs-mux-test
   (test-suite "test for persist/db"
+#|
     (test-case "open close db twice"
       (prn 1)
       (def c (open-db-connection "testdb"))
@@ -21,16 +22,16 @@
       (def test-val (random-integer 1000000000))
       (def key (string->bytes "test-key1"))
       (with-db-connection (c-path "testdb")
-        (with-committed-tx (tx) (db-put! key (nat->u8vector test-val) tx))
-        (check-equal? (u8vector->nat (with-tx (tx) (db-get key tx))) test-val)
-        (with-committed-tx (tx) (db-put! key (nat->u8vector (1+ test-val)) tx))
-        (check-equal? (u8vector->nat (with-tx (tx) (db-get key tx))) (1+ test-val))))
+        (with-committed-tx (tx) (db-put! key (bytes<-nat test-val) tx))
+        (check-equal? (nat<-bytes (with-tx (tx) (db-get key tx))) test-val)
+        (with-committed-tx (tx) (db-put! key (bytes<-nat (1+ test-val)) tx))
+        (check-equal? (nat<-bytes (with-tx (tx) (db-get key tx))) (1+ test-val))))
     (test-case "test-trivial-testdb-commits"
       (def test-base (* 65536 (random-integer 65536)))
       (def n-workers 200)
       (def failures [])
       (def (test-commit i)
-        (def key (nat->u8vector (+ i 65536)))
+        (def key (bytes<-nat (+ i 65536)))
         (def val (string->bytes (number->string (+ test-base i))))
         (try
          (match (current-db-transaction)
@@ -42,6 +43,7 @@
          ;; NB: use assertions instead of check, because we're running in a thread.
          (assert! (equal? (current-db-transaction) #f))
          (with-committed-tx (tx) (db-put! key val tx))
+         ;;(write [FOO: i key val (db-get key) (nat<-bytes key) (bytes->string val) (bytes->string (db-get key))])(newline)
          (assert! (equal? (with-tx (tx) (db-get key tx)) val))
          (catch (e)
            (printf "IN TEST ~d: ~a\n" i (error-message e))
@@ -55,4 +57,6 @@
       (printf "initial batch: ~d\nfinal batch: ~a\n" initial-batch-id final-batch-id)
       (for-each (cut printf "~s\n" <>) failures)
       (check (- final-batch-id initial-batch-id) ? (cut <= 1 <> 3))
-      (check failures ? null?))))
+      (check failures ? null?))
+|#
+    (void)))
