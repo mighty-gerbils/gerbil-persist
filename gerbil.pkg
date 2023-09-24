@@ -1,5 +1,5 @@
 ;; Data and Activity persistence layer for Gerbil
 (package: clan/persist
- depend: ("github.com/fare/gerbil-utils"
-          "github.com/fare/gerbil-poo"
-          "github.com/fare/gerbil-crypto"))
+ depend: ("github.com/mighty-gerbils/gerbil-utils"
+          "github.com/mighty-gerbils/gerbil-poo"
+          "github.com/mighty-gerbils/gerbil-crypto"))
