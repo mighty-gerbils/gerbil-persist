@@ -2,7 +2,7 @@
 (export #t)
 (import
   (for-syntax :std/stxutil)
-  :gerbil/gambit/bytes :gerbil/gambit/ports :gerbil/gambit/threads
+  :gerbil/gambit
   :std/assert :std/format
   :std/misc/completion :std/misc/hash
   :std/sugar :std/values
@@ -295,7 +295,7 @@
 
 (def (ensure-db-key key)
   (cond
-   ((bytes? key) key)
+   ((u8vector? key) key)
    ((string? key) (string->bytes key))
    (else (error "Invalid db-key" key))))
 

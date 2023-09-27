@@ -1,7 +1,7 @@
 (export #t)
 
 (import
-  :gerbil/gambit/random
+  :gerbil/gambit
   :std/format :std/misc/list :std/misc/number :std/misc/repr
   :std/sugar :std/test :std/text/hex
   :clan/assert

@@ -1,7 +1,7 @@
 (export kvs-mux-test)
 
 (import
-  :gerbil/gambit/random
+  :gerbil/gambit
   :std/assert :std/format
   :std/misc/list :std/misc/number :std/misc/repr
   :std/sugar :std/test

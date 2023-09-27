@@ -47,12 +47,11 @@
 
 (export #t)
 (import
-  :gerbil/gambit/threads
-  :std/db/leveldb
+  :clan/db/leveldb
   :std/assert
   :std/misc/completion :std/misc/list :std/misc/number
   :std/sugar
-  :clan/base :clan/concurrency :clan/path :clan/path-config)
+  :clan/base :clan/concurrency :std/misc/path :clan/path-config)
 
 (defstruct DbConnection
   (name ;; name, a string, also path to the leveldb storage

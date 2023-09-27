@@ -2,12 +2,17 @@
 ;; See the Concurrency Model section in the README.
 (export #t)
 (import
-  :gerbil/gambit/threads
   :std/assert
-  :std/misc/completion :std/misc/list :std/misc/number
+  :std/misc/completion
+  :std/misc/list
+  :std/misc/number
+  :std/misc/path
   :std/sugar
-  :clan/base :clan/concurrency :clan/path :clan/path-config
-  :clan/persist/kvs :clan/persist/kvs-sqlite)
+  :clan/base
+  :clan/concurrency
+  :clan/path-config
+  :clan/persist/kvs
+  :clan/persist/kvs-sqlite)
 
 (defstruct KvsMux ;; multiplexing users for a key value store
   (kvs ;; underlying key value store
@@ -47,7 +52,6 @@
 (def (call-with-db-lock fun (db (current-db-connection)))
   (with-db-lock (db) (fun db)))
 
-#|
 (defmethod {close KvsMux}
   (lambda (self)
     (with-db-lock (self)
@@ -88,7 +92,7 @@
   (def blocked-transactions (KvsMux-blocked-transactions c))
   (def pending-transactions (KvsMux-pending-transactions c))
   (set! (KvsMux-batch-id c) (1+ batch-id))
-  (set! (KvsMux-batch c) (leveldb-writebatch))
+  #;(set! (KvsMux-batch c) (leveldb-writebatch)) ;; open
   (set! (KvsMux-batch-completion c) (make-completion `(db-batch , (KvsMux-batch-id c))))
   (set! (KvsMux-pending-transactions c) [])
   (set! (KvsMux-blocked-transactions c) [])
@@ -236,8 +240,6 @@
 (def (sync-transaction (transaction (current-db-transaction)))
   (wait-completion (KvsMuxTx-completion transaction)))
 
-(def leveldb-sync-write-options (leveldb-write-options sync: #f))
-
 (def (db-manager c)
   (spawn/name/logged
    ['db-manager (KvsMux-name c)]
@@ -246,7 +248,7 @@
        (match (thread-receive)
          ([batch-id batch batch-completion hooks pending-transactions]
           ;; TODO: run the leveldb-write in a different OS thread.
-          (leveldb-write (KvsMux-kvs c) batch leveldb-sync-write-options)
+          #;(leveldb-write (KvsMux-kvs c) batch leveldb-sync-write-options)
           (for-each (lambda (tx) (set! (KvsMuxTx-status tx) 'complete))
                     pending-transactions)
           (for-each (lambda (hook) (hook batch-id)) hooks)
@@ -264,31 +266,3 @@
 ;; e.g. to send newly committed but previously unsent messages.
 (def (get-batch-id (c (current-db-connection)))
   (KvsMux-batch-id c))
-
-(def (db-get key (tx (current-db-transaction)) (opts (leveldb-default-read-options)))
-  (leveldb-get (KvsMux-kvs (KvsMuxTx-km tx)) key opts))
-(def (db-key? key (tx (current-db-transaction)) (opts (leveldb-default-read-options)))
-  (leveldb-key? (KvsMux-kvs (KvsMuxTx-km tx)) key opts))
-
-(def (db-put! k v (tx (current-db-transaction)))
-  (def c (KvsMuxTx-km tx))
-  (with-db-lock (c)
-    (leveldb-writebatch-put (KvsMux-batch c) k v)))
-(def (db-put-many! l (tx (current-db-transaction)))
-  (def c (KvsMuxTx-km tx))
-  (with-db-lock (c)
-    (let (batch (KvsMux-batch c))
-      (for-each (match <> ([k . v] (leveldb-writebatch-put batch k v))) l))))
-(def (db-delete! k (tx (current-db-transaction)))
-  (def c (KvsMuxTx-km tx))
-  (with-db-lock (c)
-    (leveldb-writebatch-delete (KvsMux-batch c) k)))
-
-#;(trace! current-db-connection current-db-transaction
-        open-db-connection open-db-connection!
-        close-db-connection! close-db-connection call-with-db-connection
-        db-trigger! call-with-db-lock
-        open-transaction call-with-tx call-with-committed-tx close-transaction
-        commit-transaction register-commit-hook! db-manager finalize-batch!
-        get-batch-id db-get db-key? db-put! db-put-many! db-delete!)
-|#

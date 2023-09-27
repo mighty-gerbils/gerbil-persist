@@ -1,9 +1,15 @@
 ;;;; Key Value Store Interface
 
 (import
-  :std/assert :std/db/dbi :std/db/leveldb :std/error :std/sugar
-  :std/misc/completion :std/misc/list :std/misc/number
-  :clan/path :clan/path-config
+  :std/db/dbi
+  :std/error
+  :std/misc/completion
+  :std/misc/list
+  :std/misc/number
+  :std/misc/path
+  :std/sugar
+  :clan/db/leveldb
+  :clan/path-config
   :clan/persist/kvs)
 
 (export #t)
@@ -20,14 +26,16 @@
 
 (defmethod {begin-transaction KvsLeveldb}
   (lambda (self)
-    (assert! (not (KvsLeveldb-batch self)))
+    (check-argument (not (KvsLeveldb-batch self))
+                    "KvsLevelDb without transaction already started" self)
     (def batch-id (pre-increment! (KvsLeveldb-batch-id self)))
     (set! (KvsLeveldb-batch self) (leveldb-writebatch))
     (set! (KvsLeveldb-batch-completion self) (make-completion `(db-batch ,batch-id)))))
 
 (defmethod {abort-transaction KvsLeveldb}
   (lambda (self)
-    (assert! (not (KvsLeveldb-batch self)))
+    (check-argument (KvsLeveldb-batch self)
+                    "KvsLevelDb with transaction already started" self)
     (leveldb-writebatch-clear (KvsLeveldb-batch self))
     (set! (KvsLeveldb-batch self) #f)
     (set! (KvsLeveldb-batch-completion self) #f)))
@@ -36,7 +44,8 @@
 
 (defmethod {commit-transaction KvsLeveldb}
   (lambda (self)
-    (assert! (KvsLeveldb-batch self))
+    (check-argument (KvsLeveldb-batch self)
+                    "KvsLevelDb with transaction already started" self)
     (leveldb-write (Kvs-connection self) (KvsLeveldb-batch self) leveldb-sync-write-options)
     (set! (KvsLeveldb-batch self) #f)
     (set! (KvsLeveldb-batch-completion self) #f)))

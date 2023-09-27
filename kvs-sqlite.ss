@@ -1,8 +1,13 @@
 ;;;; Key Value Store Interface
 
 (import
-  :std/db/dbi :std/db/sqlite :std/db/_sqlite :std/iter :std/sugar
-  :clan/path :clan/path-config
+  :std/db/dbi
+  :std/db/sqlite
+  :std/db/_sqlite
+  :std/iter
+  :std/misc/path
+  :std/sugar
+  :clan/path-config
   :clan/persist/kvs)
 
 (export #t)

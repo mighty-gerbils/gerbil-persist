@@ -2,4 +2,5 @@
 (package: clan/persist
  depend: ("github.com/mighty-gerbils/gerbil-utils"
           "github.com/mighty-gerbils/gerbil-poo"
-          "github.com/mighty-gerbils/gerbil-crypto"))
+          "github.com/mighty-gerbils/gerbil-crypto"
+          "github.com/mighty-gerbils/gerbil-leveldb"))

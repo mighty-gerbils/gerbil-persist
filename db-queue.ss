@@ -6,8 +6,7 @@
   DbQueue? DbQueue-send! DbQueue-restore
   DbCommittedQueue? DbCommittedQueue-send! DbCommittedQueue-restore)
 (import
-  :gerbil/gambit/threads
-  :std/db/leveldb
+  :clan/db/leveldb
   :std/misc/completion :std/misc/deque :std/misc/list :std/misc/number :std/sugar
   :clan/base :clan/concurrency
   :clan/poo/object :clan/poo/mop :clan/poo/io :clan/poo/number :clan/poo/type
