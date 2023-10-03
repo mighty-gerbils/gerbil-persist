@@ -411,3 +411,4 @@ In particular we are (1) abstracting away the underlying key-value store, and
 * [Eytzinger Binary Search](https://algorithmica.org/en/eytzinger)
 * [TreeLine: An Update-In-Place Key-Value Store for Modern Storage (2023)](https://www.vldb.org/pvldb/vol16/p99-yu.pdf)
 * [MyRocks: LSM-Tree Database Storage Engine Serving Facebook's Social Graph (2020)](https://www.vldb.org/pvldb/vol13/p3217-matsunobu.pdf)
+* See [Andy Pavlo](https://www.cs.cmu.edu/~pavlo/)'s course at [CMU](https://db.cs.cmu.edu/).
