@@ -125,15 +125,14 @@
     .ap: (lambda (v) (dv T v))
     .unap: value<-dv}
   .validate:
-  (lambda (dv (ctx '()))
-    (def c [[validating: dv] . ctx])
-    (unless (DV? dv) (type-error c "not a DV"))
+  (lambda (dv)
+    (unless (DV? dv) (raise-type-error "not a DV" dv))
     (match (std/lazy#&lazy-e (DV-value dv))
       (['resolved . v]
-       (validate T v c)
+       (validate T v)
        (match (std/lazy#&lazy-e (DV-digest dv))
          (['resolved . d]
-          (unless (equal? d (digest<- T v .digesting)) (type-error c "digest does not match"))
+          (unless (equal? d (digest<- T v .digesting)) (raise-type-error "digest does not match" dv))
           dv)
          (_ dv)))
       (_ dv)))

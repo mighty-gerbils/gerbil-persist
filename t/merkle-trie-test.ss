@@ -23,7 +23,7 @@
   (match (F .proof<- t k)
     ([sub . up]
      (assert-equal! (F .unwrap sub) (Leaf v))
-     (F .validate-proof (F .digest<- t) sub up '()))
+     (F .validate-proof (F .digest<- t) sub up))
     (_ (error "foo"))))
 
 (def (merkle-tests T)

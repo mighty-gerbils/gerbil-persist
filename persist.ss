@@ -48,7 +48,7 @@
        ;; they will call the read method, that will indirectly call make-activity with proper arguments.
        ;; : @ <- Key (Unit <- State TX) State TX
        .restore)
-  restore: (validate (Fun @ <- Key (Fun Unit <- State TX) State TX) .restore [[restore: sexp]])
+  restore: (validate (Fun @ <- Key (Fun Unit <- State TX) State TX) .restore)
 
   ;; Internal table of objects that have already been loaded from database.
   ;;loaded:: (Table @ <- Key)
@@ -86,7 +86,7 @@
   ;; either synchronously commit-transaction if it owns the transaction, or asynchronously call
   ;; sync-transaction if it doesn't, before it may assume the state being committed.
   ;; : (Fun @ <- Key State TX)
-  resume: (validate (Fun @ <- Key State TX) .resume [[resume: sexp]])
+  resume: (validate (Fun @ <- Key State TX) .resume)
   .resume:
   (lambda (key state tx)
     (def db-key (db-key<- key))
@@ -118,7 +118,7 @@
   ;; has to sync-transaction to wait for it being saved.
   ;; Also, proper mutual exclusion must be used to ensure only one piece of code
   ;; may attempt create to create an activity with the given key at any point in time.
-  make: (validate (Fun @ <- Key (Fun State <- (Fun Unit <- State TX) TX) TX) .make [[make: sexp]])
+  make: (validate (Fun @ <- Key (Fun State <- (Fun Unit <- State TX) TX) TX) .make)
   .make:
   (lambda (key init tx)
     (def db-key (db-key<- key))
@@ -140,7 +140,7 @@
   ;; For those kinds of objects where it makes sense, this may create a default activity.
   ;; Clients of this code must use proper mutual exclusion so there are no concurrent calls to get.
   ;; Get may indirectly call resume if the object is in the database, and make-default-state if not.
-  get: (validate (Fun @ <- Key TX) .get [[get: sexp]])
+  get: (validate (Fun @ <- Key TX) .get)
   .get:
   (lambda (key tx)
     (def db-key (db-key<- key))
@@ -155,7 +155,7 @@
        Key loaded resume-from-db db-key<- sexp)
   ;; Get the activity by its key.
   ;; No transaction is provided: the activity will make its own if needed.
-  <-key: (validate (Fun @ <- Key) .<-key [[<-key: sexp]])
+  <-key: (validate (Fun @ <- Key) .<-key)
   .<-key:
   (lambda (key)
     (def db-key (db-key<- key))
