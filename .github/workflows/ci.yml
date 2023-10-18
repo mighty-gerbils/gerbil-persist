@@ -9,6 +9,7 @@ defaults:
 jobs:
   build_job:
     runs-on: ubuntu-latest
+    # This is a big container with all Gerbil dependencies, Racket, geth...
     container: ghcr.io/glow-lang/glow:devel
     defaults:
       run:
