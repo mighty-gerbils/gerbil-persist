@@ -412,3 +412,5 @@ In particular we are (1) abstracting away the underlying key-value store, and
 * [TreeLine: An Update-In-Place Key-Value Store for Modern Storage (2023)](https://www.vldb.org/pvldb/vol16/p99-yu.pdf)
 * [MyRocks: LSM-Tree Database Storage Engine Serving Facebook's Social Graph (2020)](https://www.vldb.org/pvldb/vol13/p3217-matsunobu.pdf)
 * See [Andy Pavlo](https://www.cs.cmu.edu/~pavlo/)'s course at [CMU](https://db.cs.cmu.edu/).
+* [Peer-to-Peer Ordered Search Indexes](https://0fps.net/2020/12/19/peer-to-peer-ordered-search-indexes/)
+* [An Introduction to Bε-trees and Write-Optimization](https://www.usenix.org/publications/login/oct15/bender)
