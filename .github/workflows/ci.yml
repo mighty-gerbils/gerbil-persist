@@ -9,7 +9,7 @@ defaults:
 jobs:
   build_job:
     runs-on: ubuntu-latest
-    container: mukn/glow:devel
+    container: glow-lang/glow:devel
     defaults:
       run:
         shell: bash
