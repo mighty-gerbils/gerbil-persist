@@ -13,8 +13,7 @@
 ;; TODO: support remember the current skip info in DigestedTrie, so you can properly simulate
 ;; .make-branch and .make-skip when re-digesting a trie with a leaf removed.
 
-(.def (DigestedTrie. @ [Trie.] Key Height Value .digesting T Step .wrap)
-  sexp: `(DigestedTrie ,(.@ Key sexp) ,(.@ Height sexp) ,(.@ Value sexp) ,(Digesting-sexp .digesting))
+(define-type (DigestedTrie. @ [Trie.] Key Height Value .digesting T Step .wrap)
   Digest: (Digesting-Digest .digesting)
   .validate: (.@ Digest .validate)
   .sexp<-: (.@ Digest .sexp<-)
@@ -34,34 +33,36 @@
               .up: (let (up (.@ Unstep .up)) (lambda (t path) (.op up t path)))})
 
 (def (DigestedTrie Key Height Value .digesting)
-  {(:: @ DigestedTrie.) Key Height Value .digesting})
+  {(:: @ DigestedTrie.) Key Height Value .digesting
+   sexp: `(DigestedTrie ,(.@ Key sexp) ,(.@ Height sexp)
+                        ,(.@ Value sexp) ,(Digesting-sexp .digesting))})
 
-(.def (MerkleTrie. @ [ContentAddressed. Trie.]
-                     Key Height Value .wrap .unwrap .refocus .zipper<- Path
-                     .digesting .digest<-)
-   sexp: `(MerkleTrie Key: ,(.@ Key sexp) Height: ,(.@ Height sexp) Value: ,(.@ Value sexp)
-                      Digesting: ,(Digesting-sexp .digesting))
-   T: =>.+ { .walk-dependencies:
-               (lambda (f t) (match t
-                          ((Empty) (void))
-                          ((Leaf v) (f Value v))
-                          ((Branch _ l r) (f @ l) (f @ r))
-                          ((Skip _ _ _ c) (f @ c)))) }
-   Digested: {(:: @D [DigestedTrie.]) Key Height Value .digesting}
-   .proof<-: (lambda (trie key)
+(define-type (MerkleTrie. @ [ContentAddressed. Trie.]
+                            Key Height Value .wrap .unwrap .refocus .zipper<- Path
+                            .digesting .digest<-)
+  T: =>.+ { .walk-dependencies:
+            (lambda (f t) (match t
+                       ((Empty) (void))
+                       ((Leaf v) (f Value v))
+                       ((Branch _ l r) (f @ l) (f @ r))
+                       ((Skip _ _ _ c) (f @ c)))) }
+  Digested: {(:: @D [DigestedTrie.]) Key Height Value .digesting}
+  .proof<-: (lambda (trie key)
               (match (.refocus ($Costep -1 key) (.zipper<- trie))
                 ([sub . up] (cons sub (.call Path .map .digest<- up)))))
-   .validate-proof:
-   (lambda (trie-digest sub up)
-     (match (.unwrap sub)
-       ((Leaf v)
-        (validate Value v)
-        (let (digest (car ((.@ Digested Path .up) (.call Digested .leaf v) up)))
-          (unless (equal? trie-digest digest)
-            (let (D (Digesting-Digest .digesting))
-              (raise-type-error "Digest doesn't match: " D trie-digest D digest up)))))
-       ;; TODO: support negative proofs
-       (_ (raise-type-error "No leaf" sub up)))))
+  .validate-proof:
+  (lambda (trie-digest sub up)
+    (match (.unwrap sub)
+      ((Leaf v)
+       (validate Value v)
+       (let (digest (car ((.@ Digested Path .up) (.call Digested .leaf v) up)))
+         (unless (equal? trie-digest digest)
+           (let (D (Digesting-Digest .digesting))
+             (raise-type-error "Digest doesn't match: " D trie-digest D digest up)))))
+      ;; TODO: support negative proofs
+      (_ (raise-type-error "No leaf" sub up)))))
 (def (MerkleTrie Key: (Key Nat) Height: (Height Nat)
                  Value: (Value Any) Digesting: (.digesting keccak-addressing))
-  {(:: @ [MerkleTrie.]) Key Height Value .digesting})
+  {(:: @ [MerkleTrie.]) Key Height Value .digesting
+   sexp: `(MerkleTrie Key: ,(.@ Key sexp) Height: ,(.@ Height sexp) Value: ,(.@ Value sexp)
+                      Digesting: ,(Digesting-sexp .digesting))})

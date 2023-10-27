@@ -58,11 +58,11 @@
   (digest<-bytes (read-file-u8vector path) digesting))
 
 ;; trait for digestability in a given content-addressing context
-(.def (Digestable @ [] .bytes<- .digesting)
+(define-type (Digestable @ [] .bytes<- .digesting)
   .digest<-: (lambda (v (digesting .digesting)) (digest<-bytes (.bytes<- v) digesting)))
 
 ;; Non-functor function
-(.def (DigestWrapper^ @ [])
+(define-type (DigestWrapper^ @ [])
   .tap: (lambda (t) (Digesting-Digest (.@ t .digesting)))
   .ap^: (cut .call <> .digest<- <>)
   .unap^: invalid
@@ -74,14 +74,14 @@
 ;; This allows you to define all your interfaces independently from which digest function will be used,
 ;; but a given poo interface should be used in one context only, they should be initialized together,
 ;; you may want to statically clone and override in some cases, etc.
-(.def (CurrentDigesting @ [Digestable])
+(define-type (CurrentDigesting @ [Digestable])
   .digesting: (current-content-addressing))
 
 ;; : Bytes <- Digest ?ContentAddressing
 (def (content-addressing-key digest (content-addressing (current-content-addressing)))
   (u8vector-append (ContentAddressing-key-prefix content-addressing) digest))
 
-(.def (ContentAddressable @ [] sexp .digesting .digest<- .<-bytes .bytes<-)
+(define-type (ContentAddressable @ [] sexp .digesting .digest<- .<-bytes .bytes<-)
   ;; CAVEAT EMPTOR: The application developers must ensure there are no collisions
   ;; with respect to sexp for types stored in a given content-addressable context.
   .content-cache: (make-hash-table weak-values: #t)
@@ -119,8 +119,7 @@
 (def (dv<-digest t d) (DV t (lazy (.call t .<-digest d)) (lazy d) #t))
 
 ;; ContentAddressed
-(.def (ContentAddressed. @ [ContentAddressable] T .digesting)
-  sexp: `(ContentAddressed ,(.@ T sexp))
+(define-type (ContentAddressed. @ [ContentAddressable] T .digesting)
   Wrapper: {(:: @ [Wrapper.])
     .ap: (lambda (v) (dv T v))
     .unap: value<-dv}
@@ -152,7 +151,9 @@
             (make-dependencies-persistent T v tx)
             (db-put! k (bytes<- T v) tx)))))))
 
-(def (ContentAddressed t) {(:: @ ContentAddressed.) t})
+(def (ContentAddressed T)
+  {(:: @ ContentAddressed.) T
+   sexp: `(ContentAddressed ,(.@ T sexp))})
 
 (def (digest<-marshal marshal (digesting (current-content-addressing)))
   (digest<-bytes (call-with-output-u8vector marshal) digesting))

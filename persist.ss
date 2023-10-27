@@ -22,17 +22,14 @@
 (.defgeneric (make-persistent type x tx)
    slot: .make-persistent default: void)
 
-(.def (Port @ Type.) sexp: 'Port .element?: port?)
-(.def (Thread @ Type.) sexp: 'Thread .element?: thread?)
-(.def (Completion @ Type.) sexp: 'Completion .element?: completion?)
+(define-type (Port @ Type.) .element?: port?)
+(define-type (Thread @ Type.) .element?: thread?)
+(define-type (Completion @ Type.) .element?: completion?)
 
-(.def (TX @ Type.)
-   sexp: 'TX
-   .element?: DbTransaction?)
+(define-type (TX @ Type.) .element?: DbTransaction?)
 
 ;; Persistent objects, whether passive data or activities.
-(.def (Persistent. @ Type.
-       sexp ;; : Any
+(define-type (Persistent. @ Type.
        ;; Prefix for keys in database. In a relational DB, that would be the name of the table.
        key-prefix ;; : u8vector
        ;; Type descriptor for keys (to be serialized as DB key)
@@ -132,8 +129,8 @@
 ;; that will provide a transaction as a context to read of modify the data.
 ;; In case they may be borrowed, they must provide some mutual exclusion mechanism
 ;; that the borrowing activity will use to ensure data consistency.
-(.def (PersistentData @ Persistent.
-       Key loaded resume-from-db db-key<- sexp)
+(define-type (PersistentData @ Persistent.
+                               Key loaded resume-from-db db-key<-)
   ;; Read the object from its key, given a context.
   ;; For activities, this is an internal function that should only be called via get.
   ;; For passive data, this is a function that borrowers may use after they ensure mutual exclusion.
@@ -151,8 +148,8 @@
 ;; they may create transactions when they need to and borrow persistent data;
 ;; they may synchronize to I/O (including the DB) though outside transactions.
 ;; Activities communicate with each other using asynchronous messages.
-(.def (PersistentActivity @ Persistent.
-       Key loaded resume-from-db db-key<- sexp)
+(define-type (PersistentActivity @ Persistent.
+                                   Key loaded resume-from-db db-key<-)
   ;; Get the activity by its key.
   ;; No transaction is provided: the activity will make its own if needed.
   <-key: (validate (Fun @ <- Key) .<-key)
@@ -176,12 +173,12 @@
          (accessor get-state set-state!)))))
 
 ;; Persistent actor that has a persistent queue
-(.def (PersistentQueueActor @ PersistentActivity
-       Key State sexp <-key db-key<-
-       ;; type of messages sent to the actor
-       Message ;; : Type
-       ;; function to process a message
-       process) ;; : <- Message (State <-) (<- State) TX
+(define-type (PersistentQueueActor @ PersistentActivity
+              Key State sexp <-key db-key<-
+              ;; type of messages sent to the actor
+              Message ;; : Type
+              ;; function to process a message
+              process) ;; : <- Message (State <-) (<- State) TX
   .restore: ;; Provide the interface function declared above.
   (lambda (key save! state tx)
     (def name [sexp (sexp<- Key key)])
@@ -215,8 +212,8 @@
 ;; in case the process is halted before the message was fully processed.
 ;; Sometimes, you may have to pre-allocate a ticket/nonce/serial-number, save it,
 ;; so that you can feed the actor an idempotent message.
-(.def (PersistentActor @ [Thread PersistentActivity]
-       Key State sexp <-key)
+(define-type (PersistentActor @ [Thread PersistentActivity]
+              Key State <-key)
   .restore: ;; Provide the interface function declared above.
   (lambda (key save! state tx)
     (def name [sexp (sexp<- Key key)])
@@ -278,7 +275,7 @@
     ((thread-specific (<-key key)))))
 
 ;; TODO: handle mixin inheritance graph so we can make this a mixin rather than an alternative superclass
-(.def (SavingDebug @ [] Key State sexp key-prefix)
+(define-type (SavingDebug @ [] Key State key-prefix)
   saving: =>
   (lambda (super)
     (fun (saving db-key state tx)
@@ -291,7 +288,7 @@
       ;;(printf "RESUME ~s ~s => ~s\n" sexp (sexp<- Key key) (sexp<- State state))
       (super key state tx))))
 
-(.def (DebugPersistentActivity @ [SavingDebug PersistentActivity]))
+(define-type (DebugPersistentActivity @ [SavingDebug PersistentActivity]))
 
 (def (ensure-db-key key)
   (cond
