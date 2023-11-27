@@ -61,7 +61,7 @@
              (raise-type-error "Digest doesn't match: " D trie-digest D digest up)))))
       ;; TODO: support negative proofs
       (_ (raise-type-error "No leaf" sub up)))))
-(def (MerkleTrie Key: (Key Nat) Height: (Height Nat)
+(def (MerkleTrie Key: (Key UInt) Height: (Height UInt)
                  Value: (Value Any) Digesting: (.digesting keccak-addressing))
   {(:: @ [MerkleTrie.]) Key Height Value .digesting
    sexp: `(MerkleTrie Key: ,(.@ Key sexp) Height: ,(.@ Height sexp) Value: ,(.@ Value sexp)

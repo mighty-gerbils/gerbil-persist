@@ -8,7 +8,7 @@
 ;;   gxpkg install github.com/fare/gerbil-crypto
 ;;   gxpkg install github.com/fare/gerbil-poo
 
-(import :std/misc/process :clan/building :clan/multicall)
+(import :std/cli/multicall :std/misc/process :clan/building)
 (init-build-environment!
  name: "Gerbil-persist"
  deps: '("clan" "clan/poo" "clan/crypto"))

@@ -1,8 +1,10 @@
 (export kvs-sqlite-test)
 
 (import
+  :std/sugar
   :std/test
-  :clan/base :clan/path-config
+  :clan/base
+  :clan/path-config
   :clan/persist/kvs-sqlite
   ./kvs-test)
 

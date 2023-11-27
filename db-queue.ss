@@ -12,24 +12,24 @@
   :clan/poo/object :clan/poo/mop :clan/poo/io :clan/poo/number :clan/poo/type
   ./db)
 
-(def PairNatNat (Pair Nat Nat)) ;; used to represent start and length of queue
+(def PairUIntUInt (Pair UInt UInt)) ;; used to represent start and length of queue
 
-;; : Bytes <- Bytes Nat
+;; : Bytes <- Bytes UInt
 (def (db-indexed-key db-key index)
-  (u8vector-append db-key (bytes<- Nat index)))
+  (u8vector-append db-key (bytes<- UInt index)))
 
 ;; A DB Queue
 (defstruct DbQueue
   (mx ;; : Mutex
    key ;; : Bytes ;; db-key
-   start ;; : Nat ;; Next index to dequeue
-   length ;; : Nat ;; Number of items in the queue. end = start + length
+   start ;; : UInt ;; Next index to dequeue
+   length ;; : UInt ;; Number of items in the queue. end = start + length
    manager)) ;; : Thread ;; or should we have a condition variable instead?
 
 ;; Assumes we already have a lock of the queue object, and the tx is open
 ;; : <- DbQueue TX
 (def (%DbQueue-update q tx)
-  (db-put! (DbQueue-key q) (bytes<- PairNatNat (cons (DbQueue-start q) (DbQueue-length q))) tx))
+  (db-put! (DbQueue-key q) (bytes<- PairUIntUInt (cons (DbQueue-start q) (DbQueue-length q))) tx))
 
 ;; Internal: wake up the manager of a queue that isn't empty anymore.
 ;; : <- DbQueue Any
@@ -78,9 +78,9 @@
   (zero? (DbQueue-length q)))
 
 ;; Get the state of a DbQueue from the database, given its db-key
-;; : (Pair Nat Nat) <- Bytes TX
+;; : (Pair UInt UInt) <- Bytes TX
 (def (DbQueue-state db-key tx)
-  (cond ((db-get db-key tx) => (cut <-bytes PairNatNat <>))
+  (cond ((db-get db-key tx) => (cut <-bytes PairUIntUInt <>))
         (else '(0 . 0)))) ;; owl of you
 
 ;; Restore a DbQueue from its persisted state, or start a new one if none is present.
@@ -105,8 +105,8 @@
 
 ;; DB Committed Queue: only dequeue things that were fully committed
 (defstruct (DbCommittedQueue DbQueue)
-  (committed-end ;; : Nat ;; Next index to not dequeue yet
-   pending)) ;; : (Dequeue (Tuple Nat Completion Nat)) ;; dequeue of batch-id, batch-completion, end
+  (committed-end ;; : UInt ;; Next index to not dequeue yet
+   pending)) ;; : (Dequeue (Tuple UInt Completion UInt)) ;; dequeue of batch-id, batch-completion, end
 
 (def (%DbCommittedQueue-update-pending q tx) ;; the end was increased, so add to pending
   (def c (DbTransaction-connection tx))
@@ -141,7 +141,7 @@
   (>= (DbQueue-start q) (DbCommittedQueue-committed-end q)))
 
 ;; Restore a DbQueue from its persisted state, or start a new one if none is present.
-;; : DbCommittedQueue <- Any Bytes (<- Nat Bytes TX)
+;; : DbCommittedQueue <- Any Bytes (<- UInt Bytes TX)
 (def (DbCommittedQueue-restore name db-key processor)
   (def q (match (with-tx (tx) (DbQueue-state db-key tx))
            ([start . length]
