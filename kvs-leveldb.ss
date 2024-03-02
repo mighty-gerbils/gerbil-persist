@@ -1,16 +1,15 @@
 ;;;; Key Value Store Interface
 
 (import
-  :std/db/dbi
-  :std/error
-  :std/misc/completion
-  :std/misc/list
-  :std/misc/number
-  :std/misc/path
-  :std/sugar
-  :clan/db/leveldb
-  :clan/path-config
-  :clan/persist/kvs)
+  (only-in :std/error check-argument)
+  (only-in :std/misc/completion make-completion)
+  (only-in :std/misc/number pre-increment!)
+  (only-in :std/misc/path path-parent ensure-absolute-path)
+  (only-in :clan/db/leveldb leveldb-open leveldb-default-options leveldb-get
+           leveldb-writebatch leveldb-write leveldb-write-options leveldb-sync-write-options
+           leveldb-writebatch-clear leveldb-writebatch-put leveldb-writebatch-delete)
+  (only-in :clan/path-config persistent-directory)
+  (only-in :clan/persist/kvs Kvs Kvs-connection))
 
 (export #t)
 
