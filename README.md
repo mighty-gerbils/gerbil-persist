@@ -407,6 +407,7 @@ In particular we are (1) abstracting away the underlying key-value store, and
 * [Ribbit](https://github.com/udem-dlteam/ribbit#research-and-papers)
 * [Scope Sets](https://users.cs.utah.edu/plt/scope-sets/)
 
+* [RRB-vectors](https://twitter.com/hyPiRion/status/1731725164084174949)
 * [The taming of the B-trees](https://www.scylladb.com/2021/11/23/the-taming-of-the-b-trees/)
 * [Eytzinger Binary Search](https://algorithmica.org/en/eytzinger)
 * [TreeLine: An Update-In-Place Key-Value Store for Modern Storage (2023)](https://www.vldb.org/pvldb/vol16/p99-yu.pdf)
@@ -414,3 +415,5 @@ In particular we are (1) abstracting away the underlying key-value store, and
 * See [Andy Pavlo](https://www.cs.cmu.edu/~pavlo/)'s course at [CMU](https://db.cs.cmu.edu/).
 * [Peer-to-Peer Ordered Search Indexes](https://0fps.net/2020/12/19/peer-to-peer-ordered-search-indexes/)
 * [An Introduction to Bε-trees and Write-Optimization](https://www.usenix.org/publications/login/oct15/bender)
+* [Revisiting B+-tree vs. LSM-tree](https://www.usenix.org/publications/loginonline/revisit-b-tree-vs-lsm-tree-upon-arrival-modern-storage-hardware-built)
+* []()
