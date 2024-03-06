@@ -1,13 +1,20 @@
-# Persistent Concurrent Activities
+# Orthogonal Persistence, The Model
 
-_Orthogonal Persistence_: You bind variable x to 42, but then some "youths"
-steal your laptop and orcs raze your datacenter to the ground. So you move to a
-safer place and enter your passphrase in a new laptop, the system downloads
-backup copies from redundant datacenters on multiple other continents, and
-variable x is still bound to 42, yet not one single instructions in any of your
-applications ever had to even mention anything about storage and retrieval.
+_Orthogonal Persistence_: You bind variable `x` to 42 at your REPL, but then
+some “youths” steal your laptop while orcs raze your datacenter to the ground.
+So you move to a safer place, and enter your passphrase in a new laptop;
+the system downloads backup copies from redundant datacenters on multiple
+other continents; after a few minutes, your interface is restored to the
+same state it was when you left it, and variable `x` is still bound to 42.
+Yet not one single instructions in any of your applications ever had
+to even mention anything about storage and retrieval.
 
-## Orthogonal Persistence
+## Orthogonal Persistence: Computations that matter on Data that matters
+
+«Designing a programming language without data persistence means
+“I only care about toy computations for people whose data doesn't matter.”
+Designing a database without a good programming language means
+“I only care about toy data not part of any computation that matters.”»
 
 ### Persistence by Default
 
@@ -616,7 +623,21 @@ in one persistence domain, with the more dynamic code persistence in a separate
 persistence domain (though possibly on the same server, so you can still
 share transactions and not need an extra 2-Phase-Commit protocol).
 
-## Friendly vs Unfriendly Persistence
+## Bibliography
+
+Jochen Liedtke, [A Persistent System In Real Use: Experiences Of The First 13 Years"](https://os.itec.kit.edu/65_2525.php), IWOOS, 1993
+
+PS-Algol, Napier88, Ten15, and other British (mainly Scottish) persistent languages and systems.
+
+[Golem](https://Golem.cloud)
+
+The Workshop on Persistent Object Systems,
+The Workshop on Database Programming Languages,
+old VLDB conferences around 2000,
+ICOODB…
+gotta mine these conferences, and more.
+
+## Coda: Friendly vs Unfriendly Persistence
 
 In today’s world (2024), all your data persists… on your enemies’ servers.
 The big corporations and bureaucracies that try to manipulate you
@@ -653,4 +674,5 @@ go through obfuscation channels so that *they* cannot.
 
 All your friendly processes, like Dory fish, forget everything.
 All the enemy processes, like an elephant, remember everything.
-Help me change that: Sponsor [@fare on GitHub](https://github.com/sponsors/fare).
+Help me change that for you and for everyone:
+Sponsor [@fare on GitHub](https://github.com/sponsors/fare).
