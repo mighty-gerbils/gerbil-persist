@@ -625,11 +625,20 @@ share transactions and not need an extra 2-Phase-Commit protocol).
 
 ## Bibliography
 
-Jochen Liedtke, [A Persistent System In Real Use: Experiences Of The First 13 Years"](https://os.itec.kit.edu/65_2525.php), IWOOS, 1993
+[A Persistent System In Real Use: Experiences Of The First 13 Years"](https://os.itec.kit.edu/65_2525.php), by Jochen Liedtke, IWOOS 1993
 
-PS-Algol, Napier88, Ten15, and other British (mainly Scottish) persistent languages and systems.
+[PS-Algol](https://en.wikipedia.org/wiki/PS-algol),
+[Napier88](https://en.wikipedia.org/wiki/Napier88),
+[Ten15](https://en.wikipedia.org/wiki/Ten15), and other
+historical British (mainly Scottish) persistent languages and systems.
 
-[Golem](https://Golem.cloud)
+[Acton](https://www.acton-lang.org/),
+a “fault tolerant distributed programming platform for building mission critical systems”
+based on a high-level language.
+
+[Golem](https://Golem.cloud),
+a WASM-based execution platform to run highly reliable services
+with Orthogonal Persistence (which they call “Durable Execution”).
 
 The Workshop on Persistent Object Systems,
 The Workshop on Database Programming Languages,
