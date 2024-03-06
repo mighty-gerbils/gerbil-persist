@@ -142,13 +142,20 @@ persisted for sure before to take action that depends on it
 acknowledgements, or signing a follow-up transaction, etc.).
 
 In the Orthogonal Persistence paradigm, this is managed using explicit
-_write barriers_: an instruction or procedure that pauses evaluation
-until after the changes so far are committed. Optionally, it may be
-combined with thread-spawning to register a callback function to be called
-after the current transaction commits, all from within an atomic section.
-Note that evaluation after a write barrier can actually continue optimistically
-after the write barrier, as long as the side-effects it produces are not
-observable by users unless and until after the changes are committed.
+_memory barriers_: an instruction or procedure that pauses evaluation
+until after the changes so far are committed to (persistent) memory.
+Optionally, it may be combined with thread-spawning to register
+a callback function to be called after the current transaction commits,
+all from within an atomic section.
+
+Note that evaluation after a memory barrier can actually continue
+optimistically after the memory barrier. However, the side-effects it produces
+will not observable by users unless and until after the changes are committed;
+the output side-effects will be queued, and the input side-effects may block
+execution until the memory barrier is passed and outputs dequeued.
+The optimistic evaluation after a memory barrier may also not acquire locks
+on resources still available before the memory barrier, only on new resources
+created in the same optimistic “generation”.
 
 By contrast, with manual persistence, synchronization requires
 one to explicit `COMMIT` a transaction (on a database), or
@@ -177,6 +184,42 @@ In other words, a concept matters only if you can make observations from it.
 Atomicity is about the grouping of some speculative effects together;
 synchronization is how you ensure that the speculation is settled…
 before you start new atomic groups of effects.
+
+Typically, before you send out a message that commits you
+economically or legally or in any meaningful way,
+you will want to make sure that any associated supporting document,
+serial number, random nonce, transaction log, etc., is persisted.
+And once you’re ready to send it out, you will retry sending it
+until you have committed an acknowledgement that it was received.
+Conversely, you’ll commit a message before sending an acknowledgement,
+and you’ll re-send the acknowledgement if you wake up within the window
+of time that it should be sent.
+
+Note how multiple processes or threads within the same persistence domain
+can interact in synchronous ways, with a shared underlying transaction
+and memory barriers, always going forward, never having to rollback,
+without any consistency problem. This is totally unlike the database
+transaction model, where processes can never know that they are not going
+to interfere with each other, with all but one having to be rolled back.
+A lot of the needless complexity of database servers can be eschewed.
+Usual mutexes and all the regular programming techniques of real
+programming languages that people actually use and understand can be used
+to deal with contention, including much simpler reimplementations of
+any of the mechanisms that database provide at the wrong place.
+
+On the other hand, process in distinct persistence domains must
+communicate via asynchronous messages and abstractions built atop such.
+Moreover, every asynchronous message sent to a persistent process must
+(1) be idempotent, and (2) can only be sent after a memory barrier.
+Indeed, due to transient failures and restarts, a given action may be taken
+many times after its triggering condition was committed, yet before
+a sufficient reaction was acknowledged. Thus, it should be possible
+to take these actions many times with no adverse effect.
+Meanwhile, messages sent to a transient process need be neither idempotent
+nor wait for a memory barrier; however, the entire interaction with a transient
+process must be reconstitutable from scratch at any point, since
+the transient process may go at any time and have to be replaced
+by a new one with empty state.
 
 ### Publishing
 
@@ -225,7 +268,7 @@ the underlying resources are ultimately the same, and finite.
 And eventually, they tarry.
 
 Now, inasmuch as Orthogonal Persistence is managed automatically,
-without direct understanding of the human user's ultimate intent,
+without direct understanding of the human user’s ultimate intent,
 and with less care and attention given by humans
 (which is the very purpose of it),
 it will generally be somewhat less efficient in its use of resources than
@@ -279,7 +322,9 @@ continuing the operations as if nothing had changed,
 or at least, not for the worse, only for the better.
 
 Certainly there are cases when the Right Thing to do is indeed
-to erase some obsolete data, and stop some stale processes.
+to erase some obsolete data, and stop some stale processes;
+but then that same cleanup could have been done at any point,
+even without a schema upgrade, and independently from any other upgrade.
 But in general, most existing data, should be preserved, especially so
 if it concerns inventory, accounting, legal matters,
 incomplete orders, on-going operations, etc.—anything current
@@ -355,248 +400,257 @@ each independently from the rest of the software,
 except for a number of small delimited interfaces through which
 it interacts with that rest of the software.
 
-Orthogonal Persistence has atomic sections, write barriers and
+Orthogonal Persistence has atomic sections, memory barriers and
 persistent processes, that are modular.
 Manual Persistence has transactions, commits and sagas, that aren’t.
 
-Atomic sections are modular, because you can call code in a different module
-without even having to know whether or not it contains atomic sections.
-You have to be careful when writing an atomic section, but it’s care
-you would need to put in anyway, and the developer who has to do it
-also “owns” all the data at stake so has matching powers and responsibilities.
-Similarly, write barriers are modular because you can freely call other
-functions in other modules without having to care whether or not they contain
-write barriers. You may have to care that the data that is being modified
-cannot be observed in the meantime by other modules, but that is regular
-data ownership, modularity, and mutual exclusion locks around data access.
-These locks in turn are modular precisely because the processes that hold
-and release the locks are persistent, and will thus respect the invariants
-(coherent use) and variants (eventual release) of the locks. Persistent
-processes are modular because their invariants and variants persist, and
-so computer crashes do not cause deadlocks (data left forever unavailable),
-corruption (invariants “temporarily” broken left unrestorable), or other
-failures of software safety and liveness. Programmers don’t have to care
-about a fragile ecosystem and how to properly restart transient processes
-and recover lost context, because the context is not lost, the processes
-are not transient, and the ecosystem is robust.
+  - Atomic sections are modular, because you can call code
+    in a different module without even having to know whether or not
+    it contains atomic sections.
+  - You have to be careful when writing an atomic section, but it’s care
+    you would need to put in anyway, and the developer who has to do it
+    also “owns” all the data at stake and
+    so has matching powers and responsibilities.
+    Atomic sections only require local knowledge of the module
+    in which they are written.
+  - Similarly, memory barriers are modular because you can freely call
+    functions in other modules without having to care whether or not
+    they contain memory barriers.
+  - When an activity of your requires one or more memory barriers (possibly
+    introduced by an indirect library module you don’t know about), it may be
+    important to ensure that other activities will not concurrently observe
+    the speculative data and assume it was persisted already. But this is
+    easily fixed either by the other activity also using a memory barrier,
+    or by using a mutual exclusion lock ensure only one activity has access.
+  - Mutual exclusion locks (mutexes) are modular once again because developers
+    do not have to track down precisely which activity holds which locks
+    (as long as a coherent lock discipline is enforced in general).
+    Indeed, mutual exclusion across memory barriers is possible precisely
+    because the processes themselves are persistent, and so can be made
+    to respect the invariants (coherent lock discipline) and variants
+    (eventual release) of mutexes. By contrast, mutual exclusion across
+    transactions is impossible, because clients do not persist but lose
+    execution context, and therefore mutexes are *guaranteed* to
+    eventually deadlock and leave the data they protect in a corrupted state.
+  - Persistent processes are modular, because programmers can trust that
+    every process will be robustly executed, its invariants preserved
+    and its variants decreased, and thus need not be worried about any
+    of these processes being stopped and lost in the middle of using some data
+    other processes depend on, forever “temporarily” locked and corrupted,
+    in a failure of safety and liveness.
+  - Programmers don’t have to care about how to properly restart a entire zoo
+    of transient processes in the correct dependency order to be confident that
+    processes will resume correctly after a failure, correctly restoring all
+    the required context that was previously correctly persisted, because
+    the ecosystem is robust and already takes care of it for them.
 
-By contrast, transactions are not modular because every function needs
-to know whether it’s already in a transaction or not, to be conscious
-of what global entry point in a completely different module owns the
-transaction. It’s like you’re always in an giant atomic section that involves
-modules you don’t know about about data you don’t own yet must somehow respect.
-Some systems allow for “nested” transactions, but it’s really a lie because
-your code has to work against the least of the warranties of whether you’re
-already in a transaction or not and your code will be interrupted or not,
-and the simplest and most important modular programming mechanism,
-having a function return a value, cannot be protected by those
-nested transactions. There is no direct and safe way to schedule follow-up
-code to be executed after some effects are persisted. Any client-side follow-up
-after a commit is guaranteed to not be guaranteed to run. You can use
-database queues (expensive to emulate if not builtin) to commit events
-for follow-ups, and some daemon clients to process those events,
-but then you need to reimplement the entire persistent execution engine
-and encode the state of your continuations in those events—and/or
-limit your follow-ups to what restricted subset of an execution engine
-you could write. Reifying continuation state is also highly unmodular.
-And having code run in transient clients is similarly unmodular.
+Manual Persistence is unmodular for the very same reasons, in reverse:
+  - You cannot reason locally about transactions;
+    you cannot compose smaller transactions into larger transactions;
+    there is no good causal model within or across transactions;
+    the entire transaction model is flat and unmodular.
+  - Transactions are not modular because every function needs to know whether
+    it’s already in a transaction or not, to be conscious of what global entry
+    point in a completely different module owns the transaction.
+  - Transactions are like always being in an giant atomic section that involves
+    modules you don’t know about, handling data you don’t own yet must somehow
+    respect, while those modules must also magically respect data they know
+    nothing about from other modules.
+  - The model of a persistent database with transient clients supposes that
+    you already have a complete transient computation incapable of persistence,
+    then builds a completely different model for persistence without computations,
+    and try to make the two interact weakly, yet expect a robust result.
+  - Some systems allow for “nested” transactions, but it’s really a lie because
+    your code has to work against the least of the warranties of whether you’re
+    already in a transaction or not and your code will be interrupted or not.
+  - Nested transactions do not support the simplest and most important modular
+    programming mechanism, having a function return a value, which cannot be
+    protected by those nested transactions.
+  - Transactions and commits offer no direct and safe way to schedule follow-up
+    code to be executed after some effects are persisted. Any client-side
+    follow-up code after it commit is guaranteed to not be guaranteed to run,
+    and multi-transaction “sagas” that run on such clients
+    are intrinsically unreliable.
+  - Attempts to avoid sequences of many transactions by doing a lot of work
+    in a single long transaction generate more data contention as the
+    transaction gets longer, with less reliability, more latency for everyone.
+    Attempts to divide these transactions in many “batches” require a lot
+    of engineering efforts to regain some performance without addressing
+    the fundamental problem. The entire speculative model wherein clients
+    try and retry many times is unreliable, and yes, unmodular.
+  - One safe but indirect way to schedule follow-up code execution is to use
+    database queues (expensive to emulate if not builtin) to commit events
+    that some background daemon will dequeue and act upon in a follow-up
+    transactions. But then you need to encode the entire context of the
+    follow-up in each event, which is tantamous to manually implementing
+    an ad-hoc version of process persistence, just for that follow-up.
+  - Manual implementation of process persistence is not only tedious,
+    but itself not modular, unless all modules are required to manually
+    partake in a complex persistence protocol, at which point you’re
+    systematically implementing process persistence by hand with humans
+    as bad, slow and unreliable compilers.
+  - The manual persistence protocol itself is unmodular,
+    as persistence will make many details of module code part of its interface,
+    and require lots of other modules to be modified whenever that code changes.
+  - With or without follow-up internal events, Manual Persistence demands that
+    either one process will be updated that handles all internal and external
+    events, or multiple processes each for some kinds of events, that will each
+    be supervised and managed and restarted in order without forgetting any.
+    Either way, this requires a lot of advanced system administration and is
+    extremely unmodular.
 
-## XXX
+All in all, Manual Persistence makes transactional applications a nightmare
+to design and maintain, and require a lot of coordination between developers
+of notionally independent modules, database administrators, network
+administrators, and a host of expensive infrastructure professionals.
 
-deciding when to start or end an atomic section only requires
-local knowledge of the data structure at hand;
-deciding when to start or end a atomic section requires
-global knowledge of the entire program.
-Composing atomic section is straightforward;
-composing transactions is an undecidable problem.
-Large programs with lots of atomic sections are simple;
-large programs with lots of transactions (a.k.a. “sagas”) are extremely complex.
+### Persisting Execution Context
 
-On the one hand, every database change needs to be within a transaction;
-but on the other hand, it’s seldom clear where to start a transaction,
+In the dominating paradigm of Manual Persistence, it is relatively
+straightforward to restart a database client after it fails,
+though even this simple task leads to daunting complications with many
+bad surprises when reliability or scalability are desired.
+However, when doing so, all the execution context of the client is crucially
+lost at each random or not-so-random failure.
+Orthogonal Persistence preserves this context, and that is the main difference.
+How does Orthogonal Persistence work, and what would it take
+to achieve the same process persistence manually?
 
-on the one hand it means the changes within will be persisted;
-on the other hand, the end of a nested transaction doesn’t guarantee
-that the data will be committed unless it’s the outermost transaction,
-and there’s no way to escape from the transaction.
-Long transactions, or lots of small ones...
-higher-order functions...
+Process persistence consists in persisting not just
+inactive, “dead”, data structures, but also
+the active “live” control structures of the processes that manipulate them:
+the virtual machine “registers” and the control stack for every thread,
+the shared data heap, the “file descriptors” or “handles”
+opened with the Operating System, the libraries loaded,
+any shared memory or resource held, any mutex at stake, etc.
 
-you can’t compose transactions into larger transactions;
-you can’t reason locally about transactions;
-there is no good causal model within or across transactions;
-transactions suppose that you already have a complete computation model outside transactions,
-then builds a completely different one that interacts with it in weird ways, etc.
+The *low-level* way to persist data is to use some Virtual Machine (VM) that
+will do it for you, such as [Golem](https://golem.cloud)’s WASM environment.
+The VM implementation knows where all your data is, and can make regular
+snapshots of the state of the virtual CPU, saving whichever pages have changed
+between two snapshots. You can only enjoy the hardware accelerations supported
+by the VM implementation, but there are a finite number of them,
+and worse comes to worst you could run the truly computation-intensive parts
+in a transient “coprocessor” process.
+In particular, making coherent snapshots when a process runs on multiple
+processors can be especially tricky, but it is ultimately possible.
 
-Meanwhile, _atomic sections_ integrate modularly as part of your regular computation model,
+The *high-level* way to persist data is to write your programs in some language
+that has a compiler that supports Orthogonal Persistence.
+The compiler will then make each piece of a program’s execution context into
+an explicit object that can be serialized and stored in an underlying database:
+Continuation-Passing Style will make stack frames into objects;
+lambda-lifting will make lexical scope into objects;
+various explicit monads will make the context of as many effects into objects;
+all stack-allocated and heap-allocated data must be tracked with suitable types,
+such that pointers to other data can be suitably saved and restored.
+Then, every low-level checkpointing transaction will
+add the new context objects to the database and delete the old ones from it.
+To detect which objects are old and can be deleted, and avert memory leaks,
+the compiler will implement the static or dynamic model of ownership or liveness
+of context objects in the programming language semantics.
 
-### Control Persistence
+A lot of the problems, solutions and workarounds will be the same whether
+the persistence implementation is higher-level (more work done by the compiler)
+or lower-level (more work done by the runtime environment).
+Ultimately, you can see a high-level solution as having the compiler generate
+a VM specialized for your program, instead of using a general-purpose
+low-level VM for all programs.
+There are costs and benefits to either approach with many tradeoffs, and
+the “best” solution for you might lie in the middle.
 
-One reason things work composably with Orthogonal Persistence yet cannot with Manual Persistence is that we don't lose the execution context between transactions.
+Whether you choose a higher- or lower- level approach,
+good luck with doing it manually. Have some wonderful time with SQL.
+You’ll soon find that SQL’s rigid and flat (non-recursive) database schemas
+are fundamentally insufficient to store the state of (recursive) activities,
+even less so if also manually curated and you must either have thousands
+of typed tables (one per frame), or eschew the normalization and typechecking
+by the database.
+Except for the simplest of programs, you’ll find that it is undoable
+to implement manual persistence of processes without mistakes,
+what more with the limited resources available to you—except by automating it,
+at which point you have Orthogonal Persistence.
+What more, even small changes in your program can lead to large changes
+in the persistence model, that need to be correctly propagated everywhere;
+manual persistence is not modular at all.
 
-That code after the write barrier will be executed. The invariants won't be broken. The variants will be decreased.
+Finally, mind that running with Orthogonal Persistence requires no changes
+to local-only applications, but does require small changes to network
+applications that transact with remote servers.
+These will be local, modular, modifications, but modifications still.
+In particular, you will have to use the atomic section and memory barrier
+APIs to ensure your program correctly persists its effects.
+Also, when a persistent process wakes up after a pause, interrupt, failure,
+etc., it will reactivate all potential interrupted activitities, re-send
+all messages marked for sending that haven’t timed out yet,
+and poll all the information sources for messages it may have missed.
+So your network protocols will hopefully support a mode when the re-sent
+messages will be idempotent, and where the data sources can indeed be polled
+for messages received since the last one committed.
 
-Sure, with Manual Persistence, you can achieve the same: by using CPS, lambda-lifting then encoding of every continuation frame as well as heap object into the database to manually persist every thread.
+### Composing Persistence Domains
 
-Good luck with doing that manually. Have some wonderful time with SQL.
+Manually writing code to coherently persist data across several devices,
+filesystems, databases, storage services, is extremely hard, and
+will be fragile with respect to any change in the configuration.
+It will require cooperation from every module that manually persists any data,
+as well as special code to handle the outermost places that start and commit
+transactions. This is undoable in practice.
+At best, Manual Persistence will use some database service that is
+configured to have replicas, as part of a single protocol,
+with expensive system administrators to keep it all running.
 
-… and of course then you may have to reimplement your Garbage Collector and/or Ownership Model on top of SQL so as not to leak space as fast your persistent code can run.
+With Orthogonal Persistence, the underlying store is already abstracted away
+from every program for every user. The matter is then to be able to
+(1) define configurations that variously compose persistence domains
+that follow the protocol to create joins, shards, synchronous and
+asynchronous replicas, n-out-m consensus, encrypted stores, etc., and
+(2) seamlessly migrate data from one configuration to the other,
+without interrupting any of the programs running in that domain.
 
-Or then again, you could let compiler and its runtime VM automate all that for you (and more).
+This can be done in a generic fashion using domain combinators
+that work for all programs for all users, without stopping any activity,
+though maybe with increased latency and reduced speed during migration.
+With the proper combinators, you can even have your nice curated database still
+in one persistence domain, with the more dynamic code persistence in a separate
+persistence domain (though possibly on the same server, so you can still
+share transactions and not need an extra 2-Phase-Commit protocol).
 
+## Friendly vs Unfriendly Persistence
 
-Moreover, changes to your control structure
-will never be persisted, unless you explicitly transform your code
-in CPS, lambda-lift it, make each frame a table in your schema,
-and explicitly save each return frame in the database
-at every function invocation, and delete it at every function return,
-all operations practically impossible to handle manually without mistakes.
+In today’s world (2024), all your data persists… on your enemies’ servers.
+The big corporations and bureaucracies that try to manipulate you
+know everything about you, and run AIs to analyze your behavior
+to manipulate you even more into buying their stuff and obeying their orders.
+They use Manual Persistence, but they can afford thousands of database experts
+and system administrators to make it work at scale,
+so as to spy on hundreds of millions of human cattle.
 
+The only person who forgets everything is… you.
+You don’t have a good record trail of all your transactions.
+What record you have, you cannot search.
+If you liked a page, an article, a comment, a book, a movie, a game…
+the contents may disappear at any time, if they haven’t disappeared yet.
+You may have paid for it, but the company on the other side may disappear,
+may cancel their service, or deactivate that particular item you liked.
+Worse, the contents may have been rewritten and sanitized
+to fit the ideology of the day, in an Orwellian move.
+With a bit of luck and a lot of effort, you might find some version of it on
+[archive.org](https://archive.org)… if it still exists,
+and its robots weren’t told not to archive that data.
+The games, demos and other programs you used to like will not run anymore,
+because they depend on a library or virtual machine was obsoleted (e.g. Flash).
+The servers you used to use will disappear some day for sure.
 
-  b. Thou shalt never wait for a transaction to be committed from within a transaction.
-     But you can declare an atomic block wherein transactions cannot be committed
-     from within an atomic block wherein transactions cannot be committed.
-     Make sure your atomic blocks are short, though.
+As a user, you cannot afford a database expert or a system administrator;
+very few users can afford to become either themselves; and none can afford
+to modify all their software to suitably persist the data that matters.
+Your only hope, our only hope as private citizens, is that there shall be
+a platform that automatically handles the persistence of every piece of data
+you see, for every program you use, in a way that *you* can search and
+mine for patterns, while your communications with the rest of the world
+go through obfuscation channels so that *they* cannot.
 
-  4. Processes may use Write Barriers (in the style of fdatasync underneath)
-     to ensure that they won’t continue before the data so far was successfully
-     persisted to transactional storage with enough confirmations.
-     Thus, a process will fully persist all cryptographic secrets before it
-     sends network messages that rely on those secrets being available.
-
-  5. Processes within the same persistence domain can interact in synchronous
-     ways that simultaneously modify multiple processes in a same transaction.
-     Processes in distinct persistence domains can only interact via
-     asynchronous messaging. Joint domains can be implemented on top of
-     multiple asynchronous domains by using two-phase-commit (2pc)
-     and other consensus protocols.
-
-  6. An activity is persistent iff it is fully reconstituted from state
-     committed in previous transactions upon system restart. For arbitrary
-     computations, this means saving their continuation (function call frames
-     including temporary variables), as well as explicit program “data”.
-     Without compiler support you’d have to do CPS transformations by hand
-     (Continuation-Passing Style), to manually reify continuations into data.
-     A framework is provided to help you reify your program state manually
-     if you choose that route, which has the advantage of working
-     in any language, but is somewhat awkward to use.
-
-  7. To persist, all programs are run in a suitable persistent virtual machine.
-     It can be a high-level machine (e.g. source code, as in some databases),
-     or low-level (e.g. WASM, as in Golem.cloud). In this package, we offer
-     a high-level virtual machine based on the lambda-calculus and a graph
-     data model.
-
-  8. The actions that the processor takes based on the committed history
-     must be logically idempotent as far as user-visible effects are concerned.
-     Indeed, due to interruptions and restarts, a given action may be taken
-     many times after its triggering condition was committed, yet before
-     a sufficient reaction was committed. Thus, it should be possible to
-     take these actions many times with no adverse effect.
-
-  9. Typically, you’ll commit a message locally, including any serial numbers
-     and random nonces, before you send it out, and you’ll retry sending
-     until you have committed an acknowledgement.
-     Conversely, you’ll commit a message before sending an acknowledgement,
-     and you’ll re-send the acknowledgement if you wake up within the window
-     of time that it should be sent.
-
-### Corollaries
-
-  a. An activity with bounded-size state is a finite state machine.
-     More complex activities involve recursive data structures,
-     including some that may represent the persisted control structures
-     e.g. stack frames, as organized in continuations, threads, etc.
-     Code evolves often and easily, which involves lots of according changes
-     to the structure of implicit continuations as well as
-     to that of explicit data.
-     Rigid flat (non-recursive) database schemas are fundamentally insufficient
-     to store the state of (recursive) activities,
-     even less so if also manually curated.
-     You can still have your nice curated databases in separate domains.
-
-  c. You can also have write barriers
-  The "activity thread that enacts the consequences of the transaction"
-     shall be restarted identically whether the transaction just happened
-     or it was committed in a previous run from which the present process was restarted.
-     Its behavior must only depend on persisted data, and any other variable it uses
-     must be reconstitutable equivalently from persisted data.
-
-  d. The processor may optimistically make computations based on uncommitted data,
-     but they will be that: optimistic.
-     If the pipeline to committing is long, though, they may want to push data down that pipeline
-     before its dependencies are committed --- but then, these messages
-     will be marked as optimistic, their validity itself subject to the original message being committed.
-     Importantly, the validity of commitments in an outbound message must be no more than the validity
-     of the messages it depends on.
-
-  e. An asynchronous processor may never block requests;
-     conversely requests shall never be made that assume uncommitted data to have been committed
-     when it wasn’t. If the assumption is required, just wait: it’s OK.
-     If committing early is required, have the effects be conditional.
-
-  f. When the process wakes up, it shall reactivate all potential interrupted activitities,
-     re-send all messages marked for sending that haven’t timed out yet,
-     and poll all the information sources for messages it may have missed.
-
-## Consequences of violating those laws
-
-Here is a deadlock situation I had to deal with:
-
-  1. The `(User croesus)` activity is resumed in dbtx 1.
-     This launches a manager thread, which asynchronously activates
-     the activity `(TransactionTracker croesus 0)`,
-     then synchronously waits for dbtx 1 to be committed.
-
-  2. Meanwhile, the `(TransactionTracker croesus 0)` completes its transaction, then
-     in dbtx 2 both stores the result, then tries to notify `(User croesus)`
-     that it must deregister the completed tracker
-     and handle the next requested transaction if any.
-     Unhappily, the `(User croesus)` was stuck trying to wait for the dbtx 1 to be committed,
-     which stops it from processing the dbtx 2 request,
-     which prevents dbtx 2 from being committed,
-     which blocks the current batch, so dbtx 1 will never be committed.
-
-A solution was for the TransactionTracker activity to asynchronously message the User activity,
-that would start a transaction when it’s ready.
-
-## An unforgiving environment
-
-Note that situations such as the above are made to break only more obviously
-with my naive implementation of transaction batching on top of leveldb:
-
-  * Multiple transactions are grouped into a same leveldb "write-batch".
-
-  * To ensure transactionality, the batch is blocked if any transaction is still open.
-
-  * To ensure liveness, new transactions are blocked while a batch is blocked.
-
-  * A transaction waiting on another uncommitted transaction to commit
-    will thus *always* cause a deadlock of the system.
-
-A trivial and completely inefficient implementation would commit and wait after each transaction,
-and block all new transactions while one is active.
-
-A complex and somewhat inefficient implementation but one that simplifies coding somewhat
-would dynamically discover and avoid conflicts, rollback, pause and restart transactions, etc.
-In a system where transactions can be rolled back and tried again,
-the second transaction could be made to fail (at least temporarily)
-so that the first one gets a chance to be committed.
-Whatever message that second transaction was trying to process would then have to be processed again,
-with enough priority (based on arrival time) that it doesn’t get deferred indefinitely, breaking liveness.
-But that’s not what we have with leveldb right now,
-and we should probably look at a more advanced database
-for this level of functionality.
-
-More clever, we could use reversible representations for computations
-that haven’t yet been confirmed yet.
-In case of multiple concurrent write-capable replicas, use CRDTs, even.
-When some data has been confirmed, old reversal information can be archived or erased.
-Thus, instead of remembering THAT a one-time-switch was triggered, remember
-which transaction or batch number it is to be committed at/with, and discard that information
-only after it was actually committed.
-Bigger changes can be a parallel composition of series of opposite such switches.
-Other possibilities abound.
-Thus, the set of active transactions could be a set of transactions, each with a state (active or not)
-and a number (that tells when the change happens), plus a demon that advances things
-based on what has been committed so far.
+All your friendly processes, like Dory fish, forget everything.
+All the enemy processes, like an elephant, remember everything.
+Help me change that: Sponsor [@fare on GitHub](https://github.com/sponsors/fare).
