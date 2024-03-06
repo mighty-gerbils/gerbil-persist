@@ -2,8 +2,8 @@
 
 _Orthogonal Persistence_: You bind variable `x` to 42 at your REPL, but then
 some “youths” steal your laptop while orcs raze your datacenter to the ground.
-So you move to a safer place, and enter your passphrase in a new laptop;
-the system downloads backup copies from redundant datacenters on multiple
+So you move to a safer place, get a new laptop, and enter your passphrase in it;
+the system downloads encrypted backups from redundant datacenters on multiple
 other continents; after a few minutes, your interface is restored to the
 same state it was when you left it, and variable `x` is still bound to 42.
 Yet not one single instructions in any of your applications ever had
@@ -650,8 +650,12 @@ so as to spy on hundreds of millions of human cattle.
 The only person who forgets everything is… you.
 You don’t have a good record trail of all your transactions.
 What record you have, you cannot search.
+Every word said near the always-listening microphone
+of the position-tracking device known as “your phone” is recorded,
+and will be used against you, but you won’t be able to search
+for those words and be reminded.
 If you liked a page, an article, a comment, a book, a movie, a game…
-the contents may disappear at any time, if they haven’t disappeared yet.
+the contents may disappear at any time, if they haven’t disappeared already.
 You may have paid for it, but the company on the other side may disappear,
 may cancel their service, or deactivate that particular item you liked.
 Worse, the contents may have been rewritten and sanitized

@@ -1,11 +1,20 @@
 # Gerbil-persist
 
+Gerbil-persist is a package to persist concurrent processes as well as data.
+It aims at implementing robust [**Orthogonal Persistence**](persist.md).
+The document linked above explains the programming model we are aiming at.
+The rest of this README explains where we’re at, which is nowhere near finished.
+
+## A Persistence Short Story
+
 Ever had your browser cache purged? Ever changed browser?
-Got your laptop stolen? Had Russian orcs bomb your computers?
+Experienced a power loss? Got your laptop stolen?
+Had Russian orcs bomb your datacenter?
 All in the midst of a blockchain interaction with valuable assets at stake?
 With gerbil-persist, the precious private off-chain data
 based on which you manage your tokens will persist
-onto your next browser session on your next computer in the next country.
+across all these adversarial events,
+onto your next browser on your next computer in the next country.
 
 Your "decentralized application" or "wallet" will persist their data,
 completely encrypted, onto the Cloud—without the application having to add a
@@ -20,22 +29,24 @@ servers only see a unindexed random-looking key value store.
 Data replication will add robustness at the expense of latency.
 Replication configuration can be stored in a DHT (e.g. ENS or other contract).
 
-Gerbil-persist is a package to persist concurrent processes as well as data.
-It aims at implementing robust orthogonal persistence as summarized above and
-detailed below, but the current code is slowly evolving from a previous
-unencrypted iteration of a more traditional model.
+## Library Status
 
 The *current* working code is in [db.ss](db.ss), and uses
 [LevelDB](https://github.com/google/leveldb) as underlying key-value store.
+
 However, we are moving towards abstracting away the underlying store,
 and instead supporting [Sqlite](https://www.sqlite.org/index.html)
 as default on Gambit C, and
 [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
 on Gambit JS.
 
+We have not started work on the persistence of processes,
+but we have finally identified the details of a proper programming model for it:
+[**Orthogonal Persistence**](persist.md).
+
 ## Copyright and License
 
-Copyright 2020-2023 Mutual Knowledge Systems, Inc. All rights reserved.
+Copyright 2020-2024 Mutual Knowledge Systems, Inc. All rights reserved.
 Gerbil-Persist is distributed under
 the Apache License, version 2.0. See the file [LICENSE](LICENSE).
 
@@ -44,7 +55,7 @@ the Apache License, version 2.0. See the file [LICENSE](LICENSE).
 ### Our Model In a Nutshell
 
 For those familiar with the relevant concepts, our Persistence model is
-designed to be the storage layer underlying a system with Orthogonal Persistence
+designed to be the storage layer underlying a system with [Orthogonal Persistence](persist.md)
 while embodying the paradigm of content-addressed (merkleized) data.
 
 As for the implementation, we create a least-common denominator abstraction
