@@ -357,6 +357,19 @@ without Orthogonal Persistence is usually written by hand—just by
 not forgetting the code history, and instead making schema evolution
 a regular part of the programming language.
 
+Note that Orthogonal Persistence is not tied to any particular data model,
+or, for that matter, from any particular model for a query language,
+or for speculative potentially-conflicting concurrent transactions.
+You can use flat tables if you like, or a simple key-value store,
+or a typed object graph, or an untyped memory space,
+or a mix thereof, or anything you like whatsoever.
+Persistence is Orthogonal to the Data Model, and the Data Model is Orthogonal to Persistence.
+It is quite an inefficient market that resulted in the ACID properties of Persistence
+being sold in a package-deal with an absurd data model that fits very few actual use cases,
+a badly designed understandardized query language without decent modification language,
+and dubious builtin speculative transactions
+that would be better left for users to implement or not.
+
 ## Why Orthogonal Persistence Matters
 
 ### Automation vs Manual Labor
@@ -406,6 +419,7 @@ Modularity is the ability to think about software in small chunks, locally,
 each independently from the rest of the software,
 except for a number of small delimited interfaces through which
 it interacts with that rest of the software.
+(Some Functional Programmers call that Compositionality; same difference.)
 
 Orthogonal Persistence has atomic sections, memory barriers and
 persistent processes, that are modular.
@@ -625,7 +639,7 @@ share transactions and not need an extra 2-Phase-Commit protocol).
 
 ## Bibliography
 
-[A Persistent System In Real Use: Experiences Of The First 13 Years"](https://os.itec.kit.edu/65_2525.php), by Jochen Liedtke, IWOOS 1993
+[A Persistent System In Real Use: Experiences Of The First 13 Years](https://os.itec.kit.edu/65_2525.php), by Jochen Liedtke, IWOOS 1993
 
 [PS-Algol](https://en.wikipedia.org/wiki/PS-algol),
 [Napier88](https://en.wikipedia.org/wiki/Napier88),
@@ -676,16 +690,18 @@ The games, demos and other programs you used to like will not run anymore,
 because they depend on a library or virtual machine was obsoleted (e.g. Flash).
 The servers you used to use will disappear some day for sure.
 
-As a user, you cannot afford a database expert or a system administrator;
-very few users can afford to become either themselves; and none can afford
-to modify all their software to suitably persist the data that matters.
+As a user, you cannot afford a database expert or a system administrator,
+much less both; very few users can afford to become either themselves;
+and none can afford to modify all their software
+to suitably persist the data that matters into their database.
 Your only hope, our only hope as private citizens, is that there shall be
 a platform that automatically handles the persistence of every piece of data
 you see, for every program you use, in a way that *you* can search and
 mine for patterns, while your communications with the rest of the world
 go through obfuscation channels so that *they* cannot.
 
-All your friendly processes, like Dory fish, forget everything.
+All your friendly processes, like Dory the fish,
+forget everything after a short while.
 All the enemy processes, like an elephant, remember everything.
 Help me change that for you and for everyone:
 Sponsor [@fare on GitHub](https://github.com/sponsors/fare).
