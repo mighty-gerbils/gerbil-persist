@@ -417,6 +417,7 @@ In particular we are (1) abstracting away the underlying key-value store, and
 
 * [Ribbit](https://github.com/udem-dlteam/ribbit#research-and-papers)
 * [Scope Sets](https://users.cs.utah.edu/plt/scope-sets/)
+* [Defunctionalization in Roc](https://github.com/roc-lang/roc/issues/5969)
 
 * [RRB-vectors](https://twitter.com/hyPiRion/status/1731725164084174949)
 * [The taming of the B-trees](https://www.scylladb.com/2021/11/23/the-taming-of-the-b-trees/)
@@ -427,4 +428,5 @@ In particular we are (1) abstracting away the underlying key-value store, and
 * [Peer-to-Peer Ordered Search Indexes](https://0fps.net/2020/12/19/peer-to-peer-ordered-search-indexes/)
 * [An Introduction to Bε-trees and Write-Optimization](https://www.usenix.org/publications/login/oct15/bender)
 * [Revisiting B+-tree vs. LSM-tree](https://www.usenix.org/publications/loginonline/revisit-b-tree-vs-lsm-tree-upon-arrival-modern-storage-hardware-built)
-* []()
+* [DBOS.dev](https://DBOS.dev) puts the OS on top of the DB rather than the other way around.
+

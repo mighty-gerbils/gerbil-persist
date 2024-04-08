@@ -648,11 +648,13 @@ historical British (mainly Scottish) persistent languages and systems.
 
 [Acton](https://www.acton-lang.org/),
 a “fault tolerant distributed programming platform for building mission critical systems”
-based on a high-level language.
+based on a high-level language (active in 2024).
 
 [Golem](https://Golem.cloud),
 a WASM-based execution platform to run highly reliable services
-with Orthogonal Persistence (which they call “Durable Execution”).
+with Orthogonal Persistence, which they call “Durable Execution”
+to insist it covers processes, not just data (active in 2024).
+Or in the same vein, [Temporal.io](https://temporal.io/).
 
 The Workshop on Persistent Object Systems,
 The Workshop on Database Programming Languages,
@@ -666,17 +668,19 @@ In today’s world (2024), all your data persists… on your enemies’ servers.
 The big corporations and bureaucracies that try to manipulate you
 know everything about you, and run AIs to analyze your behavior
 to manipulate you even more into buying their stuff and obeying their orders.
-They use Manual Persistence, but they can afford thousands of database experts
-and system administrators to make it work at scale,
-so as to spy on hundreds of millions of human cattle.
+Modern “apps”, that don’t have or need a “save” button anymore,
+may superficially look to end-users as if they had Orthogonal Persistence,
+but underneath everything uses Manual Persistence;
+corporations can afford thousands of database experts and system administrators
+to make work it at scale, so as to spy on hundreds of millions of human cattle.
 
 The only person who forgets everything is… you.
-You don’t have a good record trail of all your transactions.
+You don’t have a good record trail of all your actions and transactions.
 What record you have, you cannot search.
 Every word said near the always-listening microphone
 of the position-tracking device known as “your phone” is recorded,
 and will be used against you, but you won’t be able to search
-for those words and be reminded.
+for those words and be reminded of conversations that matter to you.
 If you liked a page, an article, a comment, a book, a movie, a game…
 the contents may disappear at any time, if they haven’t disappeared already.
 You may have paid for it, but the company on the other side may disappear,
@@ -684,21 +688,23 @@ may cancel their service, or deactivate that particular item you liked.
 Worse, the contents may have been rewritten and sanitized
 to fit the ideology of the day, in an Orwellian move.
 With a bit of luck and a lot of effort, you might find some version of it on
-[archive.org](https://archive.org)… if it still exists,
+[archive.org](https://archive.org)… if it still exists the day you need it,
 and its robots weren’t told not to archive that data.
 The games, demos and other programs you used to like will not run anymore,
-because they depend on a library or virtual machine was obsoleted (e.g. Flash).
-The servers you used to use will disappear some day for sure.
+because they depend on a library or virtual machine was obsoleted (e.g. Flash),
+or they relied on some remote server that either has disappeared
+or will one day for sure eventually.
 
-As a user, you cannot afford a database expert or a system administrator,
-much less both; very few users can afford to become either themselves;
+As a user, or even as an independent developer, you cannot afford
+a database expert or a system administrator, much less both;
+very few individuals can afford to become either themselves;
 and none can afford to modify all their software
 to suitably persist the data that matters into their database.
 Your only hope, our only hope as private citizens, is that there shall be
 a platform that automatically handles the persistence of every piece of data
-you see, for every program you use, in a way that *you* can search and
-mine for patterns, while your communications with the rest of the world
-go through obfuscation channels so that *they* cannot.
+you see, for every program you use, in a way that *you* and other individuals
+can search and mine for patterns, while your communications with the rest of
+the world go through obfuscation channels so that *they* cannot.
 
 All your friendly processes, like Dory the fish,
 forget everything after a short while.
