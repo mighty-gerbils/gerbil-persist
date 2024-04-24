@@ -34,7 +34,7 @@
         (def val (string->bytes (number->string (+ test-base i))))
         (try
          (match (current-db-transaction)
-           ((DbTransaction connection txid status completion)
+           ((DbTransaction connection txid status)
             (printf "~s\n" [LEAKED-TX-PARAMETER: i connection txid status])
             (exit 1)
             (push! [LEAKED-TX-PARAMETER: i connection txid status] failures))
