@@ -357,18 +357,40 @@ without Orthogonal Persistence is usually written by hand—just by
 not forgetting the code history, and instead making schema evolution
 a regular part of the programming language.
 
-Note that Orthogonal Persistence is not tied to any particular data model,
+### Model Independence
+
+Note how Orthogonal Persistence is not tied to any particular data model,
 or, for that matter, from any particular model for a query language,
-or for speculative potentially-conflicting concurrent transactions.
-You can use flat tables if you like, or a simple key-value store,
-or a typed object graph, or an untyped memory space,
-or a mix thereof, or anything you like whatsoever.
+or for speculative potentially-conflicting concurrent transactions:
+You can use flat tables in the style of SQL or Datalog if you like,
+or a simple key-value store, a statically or dynamically typed object graph,
+and even a raw untyped memory space, or a mix of the above,
+or anything you like whatsoever, as fits whatever programming language you prefer to use.
 Persistence is Orthogonal to the Data Model, and the Data Model is Orthogonal to Persistence.
+
 It is quite an inefficient market that resulted in the ACID properties of Persistence
-being sold in a package-deal with an absurd data model that fits very few actual use cases,
-a badly designed understandardized query language without decent modification language,
-and dubious builtin speculative transactions
-that would be better left for users to implement or not.
+being sold in a package-deal with an absurd data model, the Relational Data Model,
+that fits very few actual use cases;
+What more, it uses a horribly misdesigned query language (SQL),
+and there is no decent modification language, much less any attempt to standardize one;
+instead, databases provide you with a dubious model for speculative transactions,
+that allows them to improve their benchmarks, but only make things more complex for users.
+
+Instead, users should be able to use whichever data model and concurrency models
+fit their application, as specified in their regular programming language.
+If “tables everywhere” were really the paradigm in which
+it is most natural to think about a problem, programmers for this problem
+would naturally want to use a table-oriented language, such as APL.
+More likely, some of the data would be in tables, and other data would be
+in different data structures, indexed differently, just as in most programs in most languages.
+Whichever way, note that the appropriate language can *never* be SQL,
+because SQL is not a complete programming language, not being able to modify the data.
+The pathetic languages that database vendors typically come up with,
+made by people who are definitely not programming language experts or even actual amateurs,
+never make the cut, either.
+On the other hand, an appropriate language can conceivably have SQL embedded in it as a subset,
+or hopefully something roughly equivalent to SQL but better designed,
+such as C# with its LINQ extension.
 
 ## Why Orthogonal Persistence Matters
 
@@ -489,12 +511,13 @@ Manual Persistence is unmodular for the very same reasons, in reverse:
     protected by those nested transactions.
   - Transactions and commits offer no direct and safe way to schedule follow-up
     code to be executed after some effects are persisted. Any client-side
-    follow-up code after it commit is guaranteed to not be guaranteed to run,
+    follow-up code after it is guaranteed to not be guaranteed to run,
     and multi-transaction “sagas” that run on such clients
     are intrinsically unreliable.
-  - Attempts to avoid sequences of many transactions by doing a lot of work
-    in a single long transaction generate more data contention as the
-    transaction gets longer, with less reliability, more latency for everyone.
+  - Attempts to avoid sequences of many transactions
+    by doing a lot of work in a single long transaction
+    generate more data contention as the transaction gets longer,
+    with less reliability, and more latency for everyone.
     Attempts to divide these transactions in many “batches” require a lot
     of engineering efforts to regain some performance without addressing
     the fundamental problem. The entire speculative model wherein clients
@@ -553,8 +576,17 @@ between two snapshots. You can only enjoy the hardware accelerations supported
 by the VM implementation, but there are a finite number of them,
 and worse comes to worst you could run the truly computation-intensive parts
 in a transient “coprocessor” process.
-In particular, making coherent snapshots when a process runs on multiple
-processors can be especially tricky, but it is ultimately possible.
+In particular, making coherent snapshots when a process runs with multiple threads,
+possibly on multiple processors, can be especially tricky, but it is ultimately possible.
+Note that while the virtual machine provides low-level persistence,
+you will want the higher-level language running on top of it to provide
+the ability to do schema upgrade: the language should support full schema dump and restore
+for the sake of restarting from a clean image,
+but maybe also dynamic class redefinition for the sake of faster schema upgrades.
+As for incremental updates between snapshots,
+they can be happen by following low-level sets of changes to the VM’s memory,
+or by following deterministic VM reactions to high-level recorded input
+(which is an approach known as “Prevalence” when done manually).
 
 The *high-level* way to persist data is to write your programs in some language
 that has a compiler that supports Orthogonal Persistence.
@@ -654,13 +686,17 @@ based on a high-level language (active in 2024).
 a WASM-based execution platform to run highly reliable services
 with Orthogonal Persistence, which they call “Durable Execution”
 to insist it covers processes, not just data (active in 2024).
-Or in the same vein, [Temporal.io](https://temporal.io/).
+In the same vein, [Temporal.io](https://temporal.io/),
+[restate](https://restate.dev), [DBOS](https://DBOS.dev)…
+they all rely on logging transaction, once in a while dumping a snapshot,
+and restoring state by replaying transactions from the snapshot.
 
 The Workshop on Persistent Object Systems,
 The Workshop on Database Programming Languages,
 old VLDB conferences around 2000,
-ICOODB…
+ICOODB, SOSP…
 gotta mine these conferences, and more.
+(Be sure to include some reading about “Pointer Swizzling”.)
 
 ## Coda: Friendly vs Unfriendly Persistence
 
@@ -673,6 +709,10 @@ may superficially look to end-users as if they had Orthogonal Persistence,
 but underneath everything uses Manual Persistence;
 corporations can afford thousands of database experts and system administrators
 to make work it at scale, so as to spy on hundreds of millions of human cattle.
+Even when they are not officially allowed to use the information,
+they’ll use it to identify then target you, at which point they can use
+“parallel reconstruction”, entrapment, harassment or just plain illegal means
+to further oppress you.
 
 The only person who forgets everything is… you.
 You don’t have a good record trail of all your actions and transactions.
@@ -683,17 +723,18 @@ and will be used against you, but you won’t be able to search
 for those words and be reminded of conversations that matter to you.
 If you liked a page, an article, a comment, a book, a movie, a game…
 the contents may disappear at any time, if they haven’t disappeared already.
-You may have paid for it, but the company on the other side may disappear,
-may cancel their service, or deactivate that particular item you liked.
+You may have paid for it, but the company on the other side may go out of business,
+may cancel the service you were using, or deactivate that particular item you liked.
 Worse, the contents may have been rewritten and sanitized
 to fit the ideology of the day, in an Orwellian move.
 With a bit of luck and a lot of effort, you might find some version of it on
 [archive.org](https://archive.org)… if it still exists the day you need it,
-and its robots weren’t told not to archive that data.
+its robots weren’t told not to archive that data, and
+the data wasn’t removed by legal actions or threats.
 The games, demos and other programs you used to like will not run anymore,
 because they depend on a library or virtual machine was obsoleted (e.g. Flash),
 or they relied on some remote server that either has disappeared
-or will one day for sure eventually.
+or will one day for sure eventually disappear.
 
 As a user, or even as an independent developer, you cannot afford
 a database expert or a system administrator, much less both;
