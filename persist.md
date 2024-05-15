@@ -671,7 +671,9 @@ share transactions and not need an extra 2-Phase-Commit protocol).
 
 ## Bibliography
 
-[A Persistent System In Real Use: Experiences Of The First 13 Years](https://os.itec.kit.edu/65_2525.php), by Jochen Liedtke, IWOOS 1993
+[A Persistent System In Real Use: Experiences Of The First 13 Years](https://os.itec.kit.edu/65_2525.php), by Jochen Liedtke, IWOOS 1993. Even the processes are Persistent. See the
+[Website](https://6xq.net/eumel/), [Docs](https://github.com/PromyLOPh/eumel), [Code](https://github.com/PromyLOPh/eumel-src) and [Tools](https://github.com/PromyLOPh/eumel-tools)
+for the persistent system EUMEL.
 
 [PS-Algol](https://en.wikipedia.org/wiki/PS-algol),
 [Napier88](https://en.wikipedia.org/wiki/Napier88),
@@ -697,6 +699,19 @@ old VLDB conferences around 2000,
 ICOODB, SOSP…
 gotta mine these conferences, and more.
 (Be sure to include some reading about “Pointer Swizzling”.)
+
+Note that the 2009 retrospective article “Orthogonal Persistence Revisited” by
+Alan Dearle, Graham N.C. Kirby and Ron Morrison does *not* mention persistence of
+continuations, stacks, execution contexts, processes, etc.
+It also claims that PS-Algol was the first Persistent language,
+and fails to cite or credit Eumel whose language ELAN that may have been even earlier,
+and that did persist processes.
+
+Also interesting: KeyKOS, EROS, Coyotos, CapROS, Grasshopper, Mungi, Charm, BRiX, Argon...
+
+Recent work:
+[TreeSLS: A Whole-system Persistent Microkernel with Tree-structured State Checkpoint on NVM](https://dl.acm.org/doi/10.1145/3600006.3613160), SOSP 2023
+
 
 ## Coda: Friendly vs Unfriendly Persistence
 
