@@ -9,8 +9,8 @@ same state it was when you left it, and variable `x` is still bound to 42.
 Yet not one single instructions in any of your applications ever had
 to even mention anything about storage and retrieval.
 
-This paper presents an original re-framing of Orthogonal Persistence,
-as refactored into a simple set of concepts in March 2024.
+[This paper presents an original re-framing of Orthogonal Persistence,
+as refactored into a simple set of concepts in March 2024.]
 
 ## Orthogonal Persistence: Computations that Matter on Data that Matters
 
@@ -30,9 +30,10 @@ they will automatically restart from last committed state.
 
 Orthogonal Persistence is to be opposed to the prevalent paradigm of
 Manual Persistence, wherein all data is transient by default, and
-developers have to explicitly write data to one or several files on disk
-when they desire persistence, and further organize their actions into
-database transactions that they commit when they desire atomicity.
+developers have to explicitly write data to one or several
+disk files when they desire persistence,
+and further organize their actions into database transactions
+when they desire atomicity.
 Orthogonal Persistence essentially reverses the burden of persistence:
 all state changes are safely written to persistent storage by default,
 and escaping into transience is the edge case sometimes invoked for performance.
@@ -40,8 +41,8 @@ and escaping into transience is the edge case sometimes invoked for performance.
 Although most issues with Manual Persistence disappear with
 Orthogonal Persistence, some issues remain, though in a simplified way,
 reframed upside down into not having been Persistence issues after all,
-so much as essential logical issues that had been previously conflated
-with the cumbersome details of their manual persistence:
+so much as essential logical issues that had been previously drowned
+among the cumbersome details of manual persistence:
 *persistence domains*, *atomicity*, *synchronization*,
 *publishing*, *resource exhaustion* and *schema upgrade*.
 
@@ -679,7 +680,8 @@ share transactions and not need an extra 2-Phase-Commit protocol).
 [Docs](https://github.com/PromyLOPh/eumel),
 [Code](https://github.com/PromyLOPh/eumel-src) and
 [Tools](https://github.com/PromyLOPh/eumel-tools)
-for the persistent system EUMEL.
+for the persistent system
+[EUMEL](https://archiveos.org/eumel/).
 TODO: Find code for the persistence work done on top of
 L3 (maybe included in or linked from Eumel repositories?)
 and L4 (see Charm?).
