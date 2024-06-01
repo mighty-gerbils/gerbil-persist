@@ -9,7 +9,10 @@ same state it was when you left it, and variable `x` is still bound to 42.
 Yet not one single instructions in any of your applications ever had
 to even mention anything about storage and retrieval.
 
-## Orthogonal Persistence: Computations that matter on Data that matters
+This paper presents an original re-framing of Orthogonal Persistence,
+as refactored into a simple set of concepts in March 2024.
+
+## Orthogonal Persistence: Computations that Matter on Data that Matters
 
 «Designing a programming language without data persistence means
 “I only care about toy computations for people whose data doesn't matter.”
@@ -672,23 +675,49 @@ share transactions and not need an extra 2-Phase-Commit protocol).
 ## Bibliography
 
 [A Persistent System In Real Use: Experiences Of The First 13 Years](https://os.itec.kit.edu/65_2525.php), by Jochen Liedtke, IWOOS 1993. Even the processes are Persistent. See the
-[Website](https://6xq.net/eumel/), [Docs](https://github.com/PromyLOPh/eumel), [Code](https://github.com/PromyLOPh/eumel-src) and [Tools](https://github.com/PromyLOPh/eumel-tools)
+[Website](https://6xq.net/eumel/),
+[Docs](https://github.com/PromyLOPh/eumel),
+[Code](https://github.com/PromyLOPh/eumel-src) and
+[Tools](https://github.com/PromyLOPh/eumel-tools)
 for the persistent system EUMEL.
+TODO: Find code for the persistence work done on top of
+L3 (maybe included in or linked from Eumel repositories?)
+and L4 (see Charm?).
 
+Operating Systems that persist processes, such as
+[KeyKOS](https://archiveos.org/keykos/),
+[EROS](https://archiveos.org/eros/),
+[Coyotos](https://archiveos.org/coyotos/),
+[CapROS](https://archiveos.org/capros/),
+[Grasshopper](https://archiveos.org/grasshopper/),
+[Mungi](http://tunes.org/wiki/mungi.html),
+[Charm](https://archiveos.org/charm/),
+[BRiX](https://archiveos.org/brix/),
+[Argon](https://archiveos.org/argon/)...
+
+The Scottish School of Orthogonal Persistence, including systems such as
 [PS-Algol](https://en.wikipedia.org/wiki/PS-algol),
 [Napier88](https://en.wikipedia.org/wiki/Napier88),
 [Ten15](https://en.wikipedia.org/wiki/Ten15), and other
 historical British (mainly Scottish) persistent languages and systems.
+However, note that the otherwise interesting 2009 retrospective article
+“Orthogonal Persistence Revisited” by Alan Dearle, Graham N.C. Kirby and Ron Morrison
+does *not* mention persistence of continuations, stacks, execution contexts, processes, etc.
+Possibly because none of the systems mentioned had it.
+It also claims that PS-Algol was the first Persistent language,
+and fails to cite or credit Eumel whose language ELAN that may have been even earlier,
+and that did persist processes.
 
 [Acton](https://www.acton-lang.org/),
 a “fault tolerant distributed programming platform for building mission critical systems”
 based on a high-level language (active in 2024).
 
+Recent systems (as of 2024) offering “Durable Execution” or “Durable Computing”,
+to insist they cover processes, not just data:
 [Golem](https://Golem.cloud),
 a WASM-based execution platform to run highly reliable services
-with Orthogonal Persistence, which they call “Durable Execution”
-to insist it covers processes, not just data (active in 2024).
-In the same vein, [Temporal.io](https://temporal.io/),
+with Orthogonal Persistence, which they call “Durable Execution”;
+in the same vein, [Temporal.io](https://temporal.io/),
 [restate](https://restate.dev), [DBOS](https://DBOS.dev)…
 they all rely on logging transaction, once in a while dumping a snapshot,
 and restoring state by replaying transactions from the snapshot.
@@ -696,18 +725,9 @@ and restoring state by replaying transactions from the snapshot.
 The Workshop on Persistent Object Systems,
 The Workshop on Database Programming Languages,
 old VLDB conferences around 2000,
-ICOODB, SOSP…
+IWOOS, ICOODB, SOSP…
 gotta mine these conferences, and more.
 (Be sure to include some reading about “Pointer Swizzling”.)
-
-Note that the 2009 retrospective article “Orthogonal Persistence Revisited” by
-Alan Dearle, Graham N.C. Kirby and Ron Morrison does *not* mention persistence of
-continuations, stacks, execution contexts, processes, etc.
-It also claims that PS-Algol was the first Persistent language,
-and fails to cite or credit Eumel whose language ELAN that may have been even earlier,
-and that did persist processes.
-
-Also interesting: KeyKOS, EROS, Coyotos, CapROS, Grasshopper, Mungi, Charm, BRiX, Argon...
 
 Recent work:
 [TreeSLS: A Whole-system Persistent Microkernel with Tree-structured State Checkpoint on NVM](https://dl.acm.org/doi/10.1145/3600006.3613160), SOSP 2023
