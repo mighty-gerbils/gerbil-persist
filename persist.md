@@ -673,6 +673,66 @@ in one persistence domain, with the more dynamic code persistence in a separate
 persistence domain (though possibly on the same server, so you can still
 share transactions and not need an extra 2-Phase-Commit protocol).
 
+## Long Range Issues with Persistence
+
+Orthogonal Persistence completely solves “short range” persistence issues:
+programmers do not have to explicitly open and close files and network connections,
+read and write, marshal and unmarshal, encode and decode data,
+organize their accesses in transactions, etc., not to mention handle errors,
+for their data to persist.
+Most of the code having to deal with persistence, which is a sizeable fraction of the code,
+disappears. Is automated away. Humans do not have to spend brain cycles about it anymore.
+
+But that means that mid- to long- range issues take the front stage:
+
+  - Low-level languages or “untrusted” low-level escapes from high-level languages
+    can *persistently* corrupt data, in ways that may only be detected long after the fact,
+    after dancing a “fandango on core”.
+    They make regular backups necessary, yet sometimes not sufficient, to survive errors.
+
+  - Static languages will make Schema Upgrade hell by introducing much rigidity in the Schema,
+    forcing expensive global transformations,
+    introducing namespace issues to identify entities across schema upgrades,
+    making incremental change harder and more expensive, etc.
+
+  - Dynamic languages with reflection will work safely, but you will lose performance
+    compared to low-level languages, and safety compared to static languages.
+    But at least you can gain metaprogramming in exchange as a super-power,
+    if you pick a Lisp instead of a blub language.
+
+  - Partial code edits may corrupt the entire database by introducing
+    broken inconsistent intermediate steps.
+    Complete code edits may require omniscience of all code, libraries, etc.,
+    and more work than possible by one person in one session.
+    Dealing with code edits therefore necessitates
+    database versioning to be able to branch with code and revert,
+    and virtualization so that edits do not jeopardize the entire universe, only a localized copy.
+    to be able to only update a sub-universe,
+    and transactionality in code updates so processes see a consistent version of the code.
+
+  - Reflection is necessary to inspect processes, modify them, salvage the runaway ones.
+    Yet some form of protection from unauthorized tampering is necessary.
+    This calls for some kind of capability-based architecture, to contain the powers
+    that would otherwise allow bad code to corrupt the entire system.
+
+  - Forms of PCLSRing with respect to *user* invariants (not just “system” invariants)
+    are necessary to cleanly kill processes, but also to stop, inspect, migrate, upgrade them.
+    This requires both system support, compiler support for every language, and language support
+    to enable users to define those invariants in the interaction “language” (formal or informal)
+    of *their* users.
+
+  - Schema Upgrade requires high-level language support, or else users may find the hard way that
+    they can't keep their data without having to badly reinvent
+    all of the mechanisms of manual persistence just for the sake of upgrading their Schema.
+
+All these concerns exist with Manual Persistence as well as with Orthogonal Persistence.
+But with Manual Persistence, the low-level concerns of getting any persistence at all
+create so much work and slows down development so much that these higher-level concerns
+appear secondary in comparison.
+By saving developers from those lowly concerns,
+Orthogonal Persistence elevates the struggle to write software,
+rather than eliminates it.
+
 ## Bibliography
 
 [A Persistent System In Real Use: Experiences Of The First 13 Years](https://os.itec.kit.edu/65_2525.php), by Jochen Liedtke, IWOOS 1993. Even the processes are Persistent. See the
@@ -769,13 +829,14 @@ With a bit of luck and a lot of effort, you might find some version of it on
 its robots weren’t told not to archive that data, and
 the data wasn’t removed by legal actions or threats.
 The games, demos and other programs you used to like will not run anymore,
-because they depend on a library or virtual machine was obsoleted (e.g. Flash),
-or they relied on some remote server that either has disappeared
+because they depend on a virtual machine that was obsoleted (e.g. Flash),
+or they relied on some remote service that either has disappeared
 or will one day for sure eventually disappear.
 
 As a user, or even as an independent developer, you cannot afford
-a database expert or a system administrator, much less both;
-very few individuals can afford to become either themselves;
+to hire or become a database expert or a system administrator, much less both;
+very few individuals can afford to run by themselves a complete stack
+of all the software they might like to us,
 and none can afford to modify all their software
 to suitably persist the data that matters into their database.
 Your only hope, our only hope as private citizens, is that there shall be
