@@ -112,7 +112,8 @@ of order, or with some mixups in the details, or data corruption, or with
 the entire system in an unrecoverable state, etc.
 
 In the paradigm of Orthogonal Persistence, atomicity is managed with explicit
-_atomic sections_: code that produces intermediate states that should not be
+_atomic sections_ (a.k.a. critical sections):
+code that produces intermediate states that should not be
 persisted is wrapped in such sections, quite similar to
 code sections that have disabled signals or interrupts,
 or that hold some mutual exclusion lock.
@@ -161,7 +162,7 @@ all from within an atomic section.
 
 Note that evaluation after a memory barrier can actually continue
 optimistically after the memory barrier. However, the side-effects it produces
-will not observable by users unless and until after the changes are committed;
+will not be observable by users unless and until after the changes are committed;
 the output side-effects will be queued, and the input side-effects may block
 execution until the memory barrier is passed and outputs dequeued.
 The optimistic evaluation after a memory barrier may also not acquire locks
@@ -290,7 +291,7 @@ than Manual Persistence, it can be less wasteful in other ways,
 avoiding duplication data between multiple “uninstalled”, “installed”,
 “published” or “archived” versions of some program or document,
 or proliferation of now-redundant code for manual persistence, etc.
-Either way, resource exhaustion a serious issue
+Either way, resource exhaustion is just as serious an issue
 with Orthogonal Persistence as with Manual Persistence.
 
 With Manual Persistence, the issue can be handled by programs at risk of
@@ -413,9 +414,9 @@ yet with a lot of subtle and often hidden high-level global constraints
 that can’t fit in any human’s brain except in the simplest cases.
 Not only does this manual labor introduce exorbitant development costs,
 the mismatch between the laborers’ capabilities and the task at hand mean
-a countless bugs, and an endless stream of critical security vulnerabilities.
-Down the line, users must waste enormous time in coping strategies,
-or fail to, with sometimes catastrophic consequences.
+countless bugs, and an endless stream of critical security vulnerabilities.
+Down the line, users must waste enormous time in coping strategies—or
+fail to, with too often catastrophic consequences.
 
 In the paradigm of automation, the same aspect of software
 is managed automatically, through a strategy coded once and for all,
@@ -552,6 +553,43 @@ to design and maintain, and require a lot of coordination between developers
 of notionally independent modules, database administrators, network
 administrators, and a host of expensive infrastructure professionals.
 
+### Atomic Section as Mutual Exclusion
+
+There is not just a clear analogy but a common higher pattern
+between atomicity of persistent changes and
+atomicity of changes in the context of concurrent activities.
+
+The widely accepted programming language solution for atomicity in the context of concurrency is
+*mutual exclusion* locks.
+The high-level primitive for them is some variant of a
+`with-lock` primitive to execute a simple thunk while holding a lock.
+The low-level primitive is an explicit lock object with which you manually
+do the above and carefully handle failure in the absence of exceptions.
+Either way, all your code is written in your usual programming language;
+most of the code is blissfully unaware of when locks are used;
+the few “critical sections” need be careful to respect a hierarchy of locks,
+but they are written in the same familiar language, and are pretty small.
+This primitive is thus modular: you can keep writing functions that don't have to care
+whether other functions ever use the primitive.
+
+If concurrency had a “solution” for atomicity similar to transactions
+“solve” atomicity for databases, it would look like this:
+instead of local `with-lock` thunks, you must organize your code in
+global “between-lock” thunks containing everything that
+happens between two calls to `with-lock`.
+That’s an inversion of control;
+to be done manually in languages without call/cc.
+Moreover, you can to explicitly persist execution context (see below)
+if you want to avoid breaking user invariants.
+To add insult to injury, the parts done while holding locks as well as
+all changes that matter must be written as magic snippets
+in a completely different language
+that you must manually metaprogram with strings.
+That’s what transactions for concurrency would be, and what transactions for databases are.
+
+If this design sounds completely crazy, that’s because it is.
+Yet that is what university professors teach, and what billion-dollar businesses sell.
+
 ### Persisting Execution Context
 
 In the dominating paradigm of Manual Persistence, it is relatively
@@ -575,13 +613,15 @@ any shared memory or resource held, any mutex at stake, etc.
 The *low-level* way to persist data is to use some Virtual Machine (VM) that
 will do it for you, such as [Golem](https://golem.cloud)’s WASM environment.
 The VM implementation knows where all your data is, and can make regular
-snapshots of the state of the virtual CPU, saving whichever pages have changed
-between two snapshots. You can only enjoy the hardware accelerations supported
+snapshots of the state of the virtual CPU and the associated memory,
+saving CPU registers and whichever memory pages have changed between two snapshots.
+You can only enjoy the hardware accelerations supported
 by the VM implementation, but there are a finite number of them,
 and worse comes to worst you could run the truly computation-intensive parts
 in a transient “coprocessor” process.
 In particular, making coherent snapshots when a process runs with multiple threads,
-possibly on multiple processors, can be especially tricky, but it is ultimately possible.
+possibly on multiple processors, can be especially tricky and costly,
+but it is ultimately possible.
 Note that while the virtual machine provides low-level persistence,
 you will want the higher-level language running on top of it to provide
 the ability to do schema upgrade: the language should support full schema dump and restore
@@ -606,6 +646,9 @@ add the new context objects to the database and delete the old ones from it.
 To detect which objects are old and can be deleted, and avert memory leaks,
 the compiler will implement the static or dynamic model of ownership or liveness
 of context objects in the programming language semantics.
+The high-level approach may or may not perform better than the low-level approach
+in persisting program; yet support for all the primitives and transformations described
+may be required anyway to deal with Schema Upgrade.
 
 A lot of the problems, solutions and workarounds will be the same whether
 the persistence implementation is higher-level (more work done by the compiler)
@@ -636,12 +679,13 @@ to local-only applications, but does require small changes to network
 applications that transact with remote servers.
 These will be local, modular, modifications, but modifications still.
 In particular, you will have to use the atomic section and memory barrier
-APIs to ensure your program correctly persists its effects.
+APIs to ensure your program correctly persists its effects
+when communicating with remote services.
 Also, when a persistent process wakes up after a pause, interrupt, failure,
 etc., it will reactivate all potential interrupted activitities, re-send
 all messages marked for sending that haven’t timed out yet,
 and poll all the information sources for messages it may have missed.
-So your network protocols will hopefully support a mode when the re-sent
+Your network protocols will hopefully support a mode when the re-sent
 messages will be idempotent, and where the data sources can indeed be polled
 for messages received since the last one committed.
 
@@ -669,8 +713,8 @@ This can be done in a generic fashion using domain combinators
 that work for all programs for all users, without stopping any activity,
 though maybe with increased latency and reduced speed during migration.
 With the proper combinators, you can even have your nice curated database still
-in one persistence domain, with the more dynamic code persistence in a separate
-persistence domain (though possibly on the same server, so you can still
+in one persistence domain, with more dynamic and less curated yet still persistent experiments
+in a separate persistence domain (though possibly on the same server, so you can still
 share transactions and not need an extra 2-Phase-Commit protocol).
 
 ## Long Range Issues with Persistence
@@ -678,27 +722,33 @@ share transactions and not need an extra 2-Phase-Commit protocol).
 Orthogonal Persistence completely solves “short range” persistence issues:
 programmers do not have to explicitly open and close files and network connections,
 read and write, marshal and unmarshal, encode and decode data,
-organize their accesses in transactions, etc., not to mention handle errors,
+organize their accesses in transactions,
+metaprogram a “database language” using strings, etc.,
+not to mention handle all the associated errors,
 for their data to persist.
-Most of the code having to deal with persistence, which is a sizeable fraction of the code,
-disappears. Is automated away. Humans do not have to spend brain cycles about it anymore.
+Most of the code having to deal with persistence,
+which is a sizeable fraction of the code, disappears.
+Is automated away. Humans do not have to spend brain cycles about it anymore.
 
 But that means that mid- to long- range issues take the front stage:
 
-  - Low-level languages or “untrusted” low-level escapes from high-level languages
+  - Low-level languages, or “untrusted” low-level escapes from high-level languages,
     can *persistently* corrupt data, in ways that may only be detected long after the fact,
     after dancing a “fandango on core”.
-    They make regular backups necessary, yet sometimes not sufficient, to survive errors.
+    The need to survive low-level errors makes regular backups necessary,
+    yet sometimes not sufficient. Scary.
 
   - Static languages will make Schema Upgrade hell by introducing much rigidity in the Schema,
     forcing expensive global transformations,
     introducing namespace issues to identify entities across schema upgrades,
     making incremental change harder and more expensive, etc.
 
-  - Dynamic languages with reflection will work safely, but you will lose performance
-    compared to low-level languages, and safety compared to static languages.
-    But at least you can gain metaprogramming in exchange as a super-power,
-    if you pick a Lisp instead of a blub language.
+  - Dynamic languages with suitable reflection primitives
+    can solve the Schema Upgrade hell,
+    but will lose in performance compared to low-level languages,
+    and in safety compared to static languages.
+    At least you can gain metaprogramming in exchange as a super-power,
+    if you pick a Lisp instead of a blub language; yet most programmers fail to.
 
   - Partial code edits may corrupt the entire database by introducing
     broken inconsistent intermediate steps.
@@ -706,9 +756,9 @@ But that means that mid- to long- range issues take the front stage:
     and more work than possible by one person in one session.
     Dealing with code edits therefore necessitates
     database versioning to be able to branch with code and revert,
-    and virtualization so that edits do not jeopardize the entire universe, only a localized copy.
-    to be able to only update a sub-universe,
-    and transactionality in code updates so processes see a consistent version of the code.
+    and virtualization so that edits do not jeopardize the entire universe,
+    but only update a sub-universe with localized changes.
+    Transactionality in code updates may enable processes to see a consistent version of the code.
 
   - Reflection is necessary to inspect processes, modify them, salvage the runaway ones.
     Yet some form of protection from unauthorized tampering is necessary.
@@ -734,6 +784,11 @@ Orthogonal Persistence elevates the struggle to write software,
 rather than eliminates it.
 
 ## Bibliography
+
+My [LambdaConf 2016 talk](https://www.youtube.com/watch?v=KsswTN2cCSc&t=250s)
+discusses Orthogonal Persistence, based on chapters 2 to 5
+of my blog [“Houyhnhnm Computing”](https://ngnghm.github.io)
+(pronounced “Hunam Computing”).
 
 [A Persistent System In Real Use: Experiences Of The First 13 Years](https://os.itec.kit.edu/65_2525.php), by Jochen Liedtke, IWOOS 1993. Even the processes are Persistent. See the
 [Website](https://6xq.net/eumel/),
@@ -794,6 +849,9 @@ gotta mine these conferences, and more.
 Recent work:
 [TreeSLS: A Whole-system Persistent Microkernel with Tree-structured State Checkpoint on NVM](https://dl.acm.org/doi/10.1145/3600006.3613160), SOSP 2023
 
+Question: see how [Unison](https://www.unison-lang.org/), [Dark](https://darklang.com/) or
+[Val town](https://www.val.town/) and other “infrastructure included” languages
+do or don’t handle persistence.
 
 ## Coda: Friendly vs Unfriendly Persistence
 
@@ -804,7 +862,7 @@ to manipulate you even more into buying their stuff and obeying their orders.
 Modern “apps”, that don’t have or need a “save” button anymore,
 may superficially look to end-users as if they had Orthogonal Persistence,
 but underneath everything uses Manual Persistence;
-corporations can afford thousands of database experts and system administrators
+corporations can afford thousands of developers, database experts and system administrators
 to make work it at scale, so as to spy on hundreds of millions of human cattle.
 Even when they are not officially allowed to use the information,
 they’ll use it to identify then target you, at which point they can use
@@ -828,16 +886,17 @@ With a bit of luck and a lot of effort, you might find some version of it on
 [archive.org](https://archive.org)… if it still exists the day you need it,
 its robots weren’t told not to archive that data, and
 the data wasn’t removed by legal actions or threats.
-The games, demos and other programs you used to like will not run anymore,
-because they depend on a virtual machine that was obsoleted (e.g. Flash),
-or they relied on some remote service that either has disappeared
+Most of the games, demos and other programs you like or used to like,
+even if you still have access to a copy, will not run anymore, because
+they depend on a virtual machine that was obsoleted (e.g. Flash),
+or they relied on some remote service that either has disappeared already
 or will one day for sure eventually disappear.
 
 As a user, or even as an independent developer, you cannot afford
 to hire or become a database expert or a system administrator, much less both;
 very few individuals can afford to run by themselves a complete stack
-of all the software they might like to us,
-and none can afford to modify all their software
+of all the software they might like to use,
+and none can afford to modify all the software they use that others wrote
 to suitably persist the data that matters into their database.
 Your only hope, our only hope as private citizens, is that there shall be
 a platform that automatically handles the persistence of every piece of data
