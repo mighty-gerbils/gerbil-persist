@@ -391,8 +391,11 @@ in different data structures, indexed differently, just as in most programs in m
 Whichever way, note that the appropriate language can *never* be SQL,
 because SQL is not a complete programming language, not being able to modify the data.
 The pathetic languages that database vendors typically come up with,
-made by people who are definitely not programming language experts or even actual amateurs,
-never make the cut, either.
+made by people who are definitely not programming language experts
+or even actual amateurs, never make the cut, either.
+(An amateur by definition loves what he’s doing;
+those who misdesign these languages obviously have no love for this part of their job,
+since they’re not even trying to do it right, or learn the very basics of language design.)
 On the other hand, an appropriate language can conceivably have SQL embedded in it as a subset,
 or hopefully something roughly equivalent to SQL but better designed,
 such as C# with its LINQ extension.
@@ -571,24 +574,36 @@ the few “critical sections” need be careful to respect a hierarchy of locks,
 but they are written in the same familiar language, and are pretty small.
 This primitive is thus modular: you can keep writing functions that don't have to care
 whether other functions ever use the primitive.
+The mutual exclusion mechanism is local and lightweight, efficient and scalable;
+it doesn’t force any global reorganization of your code,
+any specific data model, any specific control flow model.
 
 If concurrency had a “solution” for atomicity similar to transactions
 “solve” atomicity for databases, it would look like this:
 instead of local `with-lock` thunks, you must organize your code in
-global “between-lock” thunks containing everything that
-happens between two calls to `with-lock`.
+global “transactions” thunks containing everything that affects application state
+without starting or ending inside a `with-lock` statement.
 That’s an inversion of control;
 to be done manually in languages without call/cc.
-Moreover, you can to explicitly persist execution context (see below)
-if you want to avoid breaking user invariants.
+Moreover, control flow outside transactions is considered unreliable, such that
+any control flow state required to ensure application invariants must be
+explicitly reified within the transaction (see Persisting Execution Context below).
 To add insult to injury, the parts done while holding locks as well as
 all changes that matter must be written as magic snippets
 in a completely different language
 that you must manually metaprogram with strings.
+Furthermore, if you keep your transactions too small,
+you will incur a lot overhead and kill performance,
+whereas long transactions will kill both concurrency and liveness.
+Finally, the data model for your transactions is completely different from
+the regular data model for your programming language.
 That’s what transactions for concurrency would be, and what transactions for databases are.
 
 If this design sounds completely crazy, that’s because it is.
-Yet that is what university professors teach, and what billion-dollar businesses sell.
+Yet that is what university professors haugthily teach,
+what billion-dollar data expert businesses sell,
+and what every else pays billions of dollars to buy and use.
+Analyzing the ins and outs of this madness would require its own separate essay.
 
 ### Persisting Execution Context
 
