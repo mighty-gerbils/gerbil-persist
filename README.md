@@ -31,7 +31,7 @@ Replication configuration can be stored in a DHT (e.g. ENS or other contract).
 
 ## Library Status
 
-The *current* working code is in [db.ss](db.ss), and uses
+The _current_ working code is in [db.ss](db.ss), and uses
 [LevelDB](https://github.com/google/leveldb) as underlying key-value store.
 
 However, we are moving towards abstracting away the underlying store,
@@ -46,7 +46,7 @@ but we have finally identified the details of a proper programming model for it:
 
 ## Copyright and License
 
-Copyright 2020-2024 Mutual Knowledge Systems, Inc. All rights reserved.
+Copyright 2020-2024 MuKn, Inc. All rights reserved.
 Gerbil-Persist is distributed under
 the Apache License, version 2.0. See the file [LICENSE](LICENSE).
 
@@ -70,6 +70,7 @@ the user-visible state of the software will survive the interruption
 and computation will resume from that state, that was "persisted".
 
 The system may stop for many reasons:
+
 - The computer's power may go down
   (because its laptop batteries are empty, its desktop is being moved,
   the grid experiences interruptions, a man trips on a power cord,
@@ -180,14 +181,14 @@ until a giant pause is necessary to commit them all, or worse,
 memory runs out, the process is killed, and all is lost before
 they had a chance of being committed.
 
-However, the user *may* assume that changes to the database *will*
+However, the user _may_ assume that changes to the database _will_
 contain an atomic set of changes, such that no change is included
 without all the previous changes in the creation sequence.
-
 
 ### Transaction Schedule
 
 In practice, the system triggers a database transaction based on the following:
+
 - a timer set some fixed time after the previous transaction was committed, or
 - at least one process waiting for data to be committed, and at least
   some time has elapsed since the last transaction was committed.
@@ -215,10 +216,10 @@ On most database backends, the database connection is wholly unavailable
 until after the latest prepared transaction is committed anyway.
 So any new transaction will have to wait for the previous one to be committed
 before reading from the database, much less writing to it.
-*If* commits are done in the foreground, all user processes are effectively
+_If_ commits are done in the foreground, all user processes are effectively
 stopped until the database transaction is committed.
 
-*If* on the other hand, commits are done in the background,
+_If_ on the other hand, commits are done in the background,
 user processes that are not waiting for commit can keep mutating their state,
 but must do so without actually touching the database.
 In that case, they could instead be reading from a cache and writing
@@ -340,6 +341,7 @@ an index of mutable cells (if we allow any beside the top-level entry).
 
 Whenever an actual commit is scheduled, a pre-commit hook is run
 that may do the following:
+
 - Tell all processes to either roll back or roll forward to a stable state,
   where applicable, then provide all its state as a single merkleized entity.
 - Recompute a common content-addressed index of all these processes that
@@ -384,19 +386,23 @@ In particular we are (1) abstracting away the underlying key-value store, and
 (2) [encrypting all data in this underlying store](https://mukn.notion.site/Encrypted-Databases-a-Private-Low-Level-Storage-Model-582fd2775289465cb879d6acbfd7ff11).
 
 ### Basically done
+
 - Replace LevelDB by an abstraction over key value stores (see kvs.ss, kvs-leveldb.ss).
 - Use sqlite as second backend, intended as default for embedding on Gambit-C (kvs-sqlite.ss).
 - Add first layer of encryption: encrypted byte store atop kvs (ebs.ss).
 
 ### Needs testing
+
 - Rewrite a kvs-based variant of db.ss handle, queue, and merge multiple transactions (kvs-mux.ss).
 
 ### Short term planned changes
+
 - Add second layer of encryption: btrees on top of content-addressed store (btree.ss).
 - Add third layer of encryption: user-given db schema using gerbil-poo type descriptors (schema.ss).
 - Add proper support for reference counting / linear data structures
 
 ### Medium term planned changes
+
 - Support [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) on Gambit-JS.
 - Implement asynchronous commits and transaction waves with a cache.
 - Implement persistent bytecode interpreter
@@ -407,6 +413,7 @@ In particular we are (1) abstracting away the underlying key-value store, and
   [IPFS pinning service](https://sourceforge.net/software/ipfs-pinning/))
 
 ### Long term unplanned hopes
+
 - Support [PostgreSQL](https://www.postgresql.org/) on Gambit-C.
 - Support [CockroachDB](https://www.cockroachlabs.com/) as a replicated key-value store,
 - Implement our own shared-memory object database in the style of
@@ -415,18 +422,17 @@ In particular we are (1) abstracting away the underlying key-value store, and
 
 ## Bibliography
 
-* [Ribbit](https://github.com/udem-dlteam/ribbit#research-and-papers)
-* [Scope Sets](https://users.cs.utah.edu/plt/scope-sets/)
-* [Defunctionalization in Roc](https://github.com/roc-lang/roc/issues/5969)
+- [Ribbit](https://github.com/udem-dlteam/ribbit#research-and-papers)
+- [Scope Sets](https://users.cs.utah.edu/plt/scope-sets/)
+- [Defunctionalization in Roc](https://github.com/roc-lang/roc/issues/5969)
 
-* [RRB-vectors](https://twitter.com/hyPiRion/status/1731725164084174949)
-* [The taming of the B-trees](https://www.scylladb.com/2021/11/23/the-taming-of-the-b-trees/)
-* [Eytzinger Binary Search](https://algorithmica.org/en/eytzinger)
-* [TreeLine: An Update-In-Place Key-Value Store for Modern Storage (2023)](https://www.vldb.org/pvldb/vol16/p99-yu.pdf)
-* [MyRocks: LSM-Tree Database Storage Engine Serving Facebook's Social Graph (2020)](https://www.vldb.org/pvldb/vol13/p3217-matsunobu.pdf)
-* See [Andy Pavlo](https://www.cs.cmu.edu/~pavlo/)'s course at [CMU](https://db.cs.cmu.edu/).
-* [Peer-to-Peer Ordered Search Indexes](https://0fps.net/2020/12/19/peer-to-peer-ordered-search-indexes/)
-* [An Introduction to Bε-trees and Write-Optimization](https://www.usenix.org/publications/login/oct15/bender)
-* [Revisiting B+-tree vs. LSM-tree](https://www.usenix.org/publications/loginonline/revisit-b-tree-vs-lsm-tree-upon-arrival-modern-storage-hardware-built)
-* [DBOS.dev](https://DBOS.dev) puts the OS on top of the DB rather than the other way around.
-
+- [RRB-vectors](https://twitter.com/hyPiRion/status/1731725164084174949)
+- [The taming of the B-trees](https://www.scylladb.com/2021/11/23/the-taming-of-the-b-trees/)
+- [Eytzinger Binary Search](https://algorithmica.org/en/eytzinger)
+- [TreeLine: An Update-In-Place Key-Value Store for Modern Storage (2023)](https://www.vldb.org/pvldb/vol16/p99-yu.pdf)
+- [MyRocks: LSM-Tree Database Storage Engine Serving Facebook's Social Graph (2020)](https://www.vldb.org/pvldb/vol13/p3217-matsunobu.pdf)
+- See [Andy Pavlo](https://www.cs.cmu.edu/~pavlo/)'s course at [CMU](https://db.cs.cmu.edu/).
+- [Peer-to-Peer Ordered Search Indexes](https://0fps.net/2020/12/19/peer-to-peer-ordered-search-indexes/)
+- [An Introduction to Bε-trees and Write-Optimization](https://www.usenix.org/publications/login/oct15/bender)
+- [Revisiting B+-tree vs. LSM-tree](https://www.usenix.org/publications/loginonline/revisit-b-tree-vs-lsm-tree-upon-arrival-modern-storage-hardware-built)
+- [DBOS.dev](https://DBOS.dev) puts the OS on top of the DB rather than the other way around.
