@@ -46,7 +46,7 @@ but we have finally identified the details of a proper programming model for it:
 
 ## Copyright and License
 
-Copyright 2020-2024 MuKn Inc. All rights reserved.
+Copyright 2020-2024 MuKn Inc All rights reserved.
 Gerbil-Persist is distributed under
 the Apache License, version 2.0. See the file [LICENSE](LICENSE).
 
