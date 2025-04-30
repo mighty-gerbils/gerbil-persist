@@ -68,8 +68,8 @@ This document is available under the bugroff license.
              with a view on the beach of San Theodoros.
              He is on the bottom left of the panel;
              we see his back, he is turned slightly towards the right of the panel.
-             On the round table he has a laptop,
-             with white-on-black window on which is display "> foo = 42"
+             His is typing on a laptop on the round café table.
+             On the laptop, a white-on-black window on which is display "> foo = 42"
              and at the next line "> " aligned under the above ">", followed by a blinking underscore cursor.
              On the top left side of the panel,
              a robber in a hoodie is approaching subreptitiously;
@@ -135,12 +135,12 @@ This document is available under the bugroff license.
              On the top left side of the panel,
              Nestor the Marlinskpike butler is bringing the captain a bottle of whisky and a glass on a platter.
         ;}
-        @L{You define @code{foo} at the REPL}
+        @L{At a REPL on your laptop, you define @code{foo}}
         @L{You involuntarily donate your laptop to a “youth”}
         @L{Orcs raze your data center}
-        @L{At home, install new laptop, enter credentials}
+        @L{Back home, install new laptop, enter credentials}
         @L{Your session is as before, @code{foo} still defined}
-        @L{Yet not a single LoC involved backing up data})
+        @L{... yet not a single LoC involved backing up data})
      ($slide "Persistence vs What?"
         @L{Persistence is @em{when your data survives}}
         @L{As with Security: what attack model?}
@@ -152,16 +152,16 @@ This document is available under the bugroff license.
         @L{Today “Durable Execution”. Renewed research.}
         @L{Me: My good old HP28})
      ($slide @list{Thesis}
-        @L{Orthogonal Persistence is the Right Thing™}
+        @L{Orthogonal Persistence (OP) is the Right Thing™}
         @L{Persisting Continuations simplifies everything else}
         @L{Transactions are the wrong abstraction}
-        @L{Elevates the problems it doesn’t solve}))
-    ($section "Fractal Transience"
+        @L{OP elevates the problems it doesn’t solve}))
+    ($section "Today: Fractal Transience"
      $plan-slide
      ($slide @list{Disappointing Users}
         @L{My mom's book database}
         @L{C-x C-s in my fingers}
-        @L{No/bad/lost backups... oops}
+        @L{Who never lost data to no/bad/lost backups?}
         @L{... Don't modern Apps autopersist data?})
      ($slide @list{Vendor Lock-In Persistence}
         @L{Only easy case: won't sync across devices, accounts...}
@@ -187,14 +187,14 @@ This document is available under the bugroff license.
      $plan-slide
      ($slide @list{It's Just There}
         @L{Data “just” persists}
-        @L{Code runs in ambient (sub)“domain”}
+        @L{Code runs in ambient “domain”}
         @L{Interactions, e.g. Editing Documents, not “Apps”}
         @L{Backup Storage Provider Subscription}) ;; Admin role, can be delegated to accountable party
      ($slide @list{Example Domains}
         @code{
-          (me (work (client1 client2 client3 hr))
-              (home (cooking kids taxes))
-              (secret (cia kgb mosad))
+          (me (work (client1 client2 client3 hr)) @bri
+              (home (cooking kids taxes)) @bri
+              (secret (cia kgb mosad)) @bri
               (love (wife lover1 lover2)))
         })
      ($slide @list{Domains}
@@ -223,7 +223,7 @@ This document is available under the bugroff license.
         @L{Fewer things to think about} ;; for AIs as well as humans
         @L{Fewer things to get wrong}
         @L{Smaller attack surface}
-        @L{Whoever reaches for forbidden capabilities @em{is} a criminal})
+        @L{Who attempts to use extra capabilities as hostile})
      ;; Knife at home being normal vs abnormal and threat detection (food pre-cut)
      ;; Fire at home being normal vs abnormal and autosprinkler (candles, cigarettes)
      ($slide @list{Full Abstraction}
@@ -239,8 +239,8 @@ This document is available under the bugroff license.
     ($section "Programming Model for Orthogonal Persistence"
      $plan-slide
      ($slide @list{Manual Persistence Sucks}
-        @L{PL: Everything is a Transient—except complex storage protocols}
-        @L{DB: Everything is a Table—except Queues, Procedures...}
+        @L{PL: Everything Transient—except complex storage protocols}
+        @L{DB: Everything Table—except Queues, Procedures...}
         @L{Everyone: Processes are inherently transient}
         @L{No eff* way to persist dynamic code, continuations})
      ($slide @list{Transactions are Bad}
@@ -268,17 +268,17 @@ This document is available under the bugroff license.
         @L{Identity not tied to a machine, vendor, etc.}
         @L{Dynamically add or remove backends}
         @L{Dynamically join (sub)Domains in consensus}))
-    ($section "Decoupling Issues"
+    ($section "Decoupling Issues from Persistence"
      $plan-slide
      ($slide @list{Never Save and Copy, Publish and Share}
-        @L{Publish / Tag versions}
-        @L{Share (sub)Documents}
-        @L{Fork and Join versions… of Processes} ;; entire workspace in git
-        )
+        @L{Never Save, Tag Stable Versions}
+        @L{Never Copy, Fork and Join versions… of Processes} ;; entire workspace in git
+        @L{Never Copy, (Un)Publish and Share (Sub)Documents}
+        @L{Never Forget, Cache and Remember}) ;; preserve identity not just content
      ($slide @list{Never OOM to death, manage quotas}
         @L{Stop processes & escape to metasystem}
-        @L{Adjust: increase quota, GC…}
-        @L{Kill or Restart}
+        @L{Adjust: increase quota, GC, fix bug…}
+        @L{Kill maybe, but also Restart} ;; either way, user-level PCLSRing
         @L{Meta: Predict usage, anticipate increase})
      ($slide @list{Never Migrate, Just Upgrade Schema or Change Backends}
         @L{Schema Upgrade, Change Backends are expected}
@@ -288,25 +288,25 @@ This document is available under the bugroff license.
      ($slide @list{Never Corrupt, Maintain}
         @L{No Corruption-prone yet Static language}
         @L{Low-level or transient code in isolated VMs within Domain}
-        @L{Live systems you cultivate, not dead programs you throw away}
+        @L{Live systems to cultivate, not dead programs to throw away}
         @L{Debug using reflection within version forks}))
     ($section "Conclusion: Consequences of Orthogonal Persistence"
      $plan-slide
      ($slide @list{Different Software Architecture}
-        @L{Pervasive change throughout all software} ;; No save, no copy
-        @L{Reflection, Capabilities…} ;; Different PLs
-        @L{Versioning, Schema Upgrade, Consensus…} ;; Different APIs
-        @L{Can run legacy code in managed VMs}) ;; Legacy
+        @L{Reflection, Capabilities, Versioning, Upgrade, Consensus…} ;; Different APIs
+        @L{Pervasive changes throughout all system} ;; No save, no copy
+        @L{Change mindset from PL to System Paradigm}
+        @L{Run legacy code in managed VMs}) ;; Legacy
      ($slide @list{Economic Implications: New Markets}
         @L{Documents and Modules, not Apps}
         @L{Competing Blind Storage, not Vertical Mopolonies}
         @L{Local Code, not Spying Ad Servers}
         @L{Admin Delegation, under User Control})
-     ($slide @list{Social Implications to Technical Change}
-        @L{Users: Empowered, Refocused—Can Delegate}
+     ($slide @list{Social Implications: Better Division of Labor}
+        @L{Users: Empowered, Refocused—Can Delegate Admin}
         @L{Developers: Less Repetition, More Specialization}
         @L{Providers: Breaking Vertical Monopolies}
-        @L{Defenders: Narrower Types via Reflective Factoring})
+        @L{Defenders: Better Control on Smaller Attack Surfaces})
      ($slide @list{Thank You!}
         @Li{Model: @Url{https://github.com/mighty-gerbils/gerbil-persist/blob/master/persist.md}}
         @Li{Looking for funding…}

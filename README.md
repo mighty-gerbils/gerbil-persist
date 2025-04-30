@@ -3,7 +3,9 @@
 Gerbil-persist is a package to persist concurrent processes as well as data.
 It aims at implementing robust [**Orthogonal Persistence**](persist.md).
 The document linked above explains the programming model we are aiming at.
-The rest of this README explains where we’re at, which is nowhere near finished.
+The rest of this README explains where we’re at.
+
+***The implementation is nowhere near finished, it is barely begun.***
 
 ## A Persistence Short Story
 
