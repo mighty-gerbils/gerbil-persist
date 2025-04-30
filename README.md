@@ -429,4 +429,6 @@ In particular we are (1) abstracting away the underlying key-value store, and
 * [An Introduction to Bε-trees and Write-Optimization](https://www.usenix.org/publications/login/oct15/bender)
 * [Revisiting B+-tree vs. LSM-tree](https://www.usenix.org/publications/loginonline/revisit-b-tree-vs-lsm-tree-upon-arrival-modern-storage-hardware-built)
 * [DBOS.dev](https://DBOS.dev) puts the OS on top of the DB rather than the other way around.
+* [BlueStore backend for Ceph distributed filesystem](https://x.com/petereliaskraft/status/1906420979896893823)
+* [A Transaction Model](https://jimgray.azurewebsites.net/papers/A%20Transaction%20Model%20RJ%202895.pdf) by Jim Gray (1980)
 

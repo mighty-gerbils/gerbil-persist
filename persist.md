@@ -146,11 +146,18 @@ But unlike atomic sections, transactions are
 a low-level yet global concept that isn’t modular.
 See section below on *Modularity*.
 
+Note that atomicity is specific to a given persistence domain.
+Changes across multiple persistence domains are not atomic by default.
+In some cases, atomic changes across multiple persistence domains
+can be achieved, but they require that the domains be under common management,
+or at least to agree on some costly consensus protocol such as two-phase commit
+(see section [Composing Persistence Domains](#composing-persistence-domains)).
+
 ### Synchronization
 
 Synchronization is the ability to wait for some data to have been
 persisted for sure before to take action that depends on it
-(such as sending ensuring a transfer was complete before sending
+(such as ensuring a transfer was complete before sending
 acknowledgements, or signing a follow-up transaction, etc.).
 
 In the Orthogonal Persistence paradigm, this is managed using explicit
@@ -217,9 +224,9 @@ A lot of the needless complexity of database servers can be eschewed.
 Usual mutexes and all the regular programming techniques of real
 programming languages that people actually use and understand can be used
 to deal with contention, including much simpler reimplementations of
-any of the mechanisms that database provide at the wrong place.
+any of the mechanisms that databases provide at the wrong place.
 
-On the other hand, process in distinct persistence domains must
+On the other hand, processes in distinct persistence domains must
 communicate via asynchronous messages and abstractions built atop such.
 Moreover, every asynchronous message sent to a persistent process must
 (1) be idempotent, and (2) can only be sent after a memory barrier.
@@ -302,19 +309,20 @@ delete redundant copies and variants of programs and documents, etc.,
 hopefully without deleting by mistake any essential information that wasn’t
 properly backed up already.
 
-With Orthogonal Persistence, the persistence usually happens
+With Orthogonal Persistence, persistence usually happens
 without user supervision, so instead users configure which processes run
 in which division of what persistence domain, and assign
 limits, alerts, shared or private soft or hard reserves, and
 emergency plans to each domain:
-every process is monitored so users or automated business agents
+every process and every domain is monitored, its resource usage accounted,
+so users or automated business agents
 can take proactive measures before they run out of bounds, and
 reactive measures after they do;
 processes are stopped when they run out of space, and
 can be resumed after space issues are solved;
 space is reserved so special debugging processes can run
-in the space of a stopped process, inspect and cleanup its data,
-garbage collect unneeded elements, and restart the process—or
+inside the scope of a stopped process, inspect and cleanup its data,
+garbage collect unneeded elements, and resume the process—or
 simply extract the useful data, restart a new process and
 shutter the one that ran out of space.
 
@@ -452,10 +460,12 @@ it interacts with that rest of the software.
 (Some Functional Programmers call that Compositionality; same difference.)
 
 Orthogonal Persistence has atomic sections, memory barriers and
-persistent processes, that are modular.
-Manual Persistence has transactions, commits and sagas, that aren’t.
+persistent processes, that are modular:
+they say “don't cut the computation here” which only depends on local knowledge and weak synchronization.
+Manual Persistence has transactions, commits and sagas, that aren’t:
+they say “cut the computation exactly here” which requires global knowledge and strong synchronization.
 
-  - Atomic sections are modular, because you can call code
+  - Atomic sections are modular, because you can call code or be called by code
     in a different module without even having to know whether or not
     it contains atomic sections.
   - You have to be careful when writing an atomic section, but it’s care
@@ -467,15 +477,17 @@ Manual Persistence has transactions, commits and sagas, that aren’t.
   - Similarly, memory barriers are modular because you can freely call
     functions in other modules without having to care whether or not
     they contain memory barriers.
-  - When an activity of your requires one or more memory barriers (possibly
-    introduced by an indirect library module you don’t know about), it may be
-    important to ensure that other activities will not concurrently observe
-    the speculative data and assume it was persisted already. But this is
-    easily fixed either by the other activity also using a memory barrier,
-    or by using a mutual exclusion lock ensure only one activity has access.
+  - When an activity of yours requires one or more memory barriers
+    (possibly introduced by an indirect library module you don’t know about),
+    it may be important to ensure that other activities will not concurrently
+    observe the speculative data and assume it was persisted already.
+    But this is easily fixed
+    either by the other activity also using a memory barrier,
+    or by using a mutual exclusion lock to ensure only one activity has access.
   - Mutual exclusion locks (mutexes) are modular once again because developers
     do not have to track down precisely which activity holds which locks
-    (as long as a coherent lock discipline is enforced in general).
+    (as long as a coherent lock discipline is enforced in general,
+    which can be enforced with local knowledge).
     Indeed, mutual exclusion across memory barriers is possible precisely
     because the processes themselves are persistent, and so can be made
     to respect the invariants (coherent lock discipline) and variants
@@ -497,7 +509,8 @@ Manual Persistence has transactions, commits and sagas, that aren’t.
 
 Manual Persistence is unmodular for the very same reasons, in reverse:
   - You cannot reason locally about transactions;
-    you cannot compose smaller transactions into larger transactions;
+    you cannot compose smaller transactions into larger transactions
+    or decompose larger ones into smaller ones;
     there is no good causal model within or across transactions;
     the entire transaction model is flat and unmodular.
   - Transactions are not modular because every function needs to know whether
@@ -790,6 +803,19 @@ But that means that mid- to long- range issues take the front stage:
     they can't keep their data without having to badly reinvent
     all of the mechanisms of manual persistence just for the sake of upgrading their Schema.
 
+  - Inasmuch as persistent software must run on top of transient operating systems,
+    all the transient details like hostname, pid, file descriptors, etc.,
+    must be virtualized away from the underlying transient operating system,
+    since they might change from time to time as the process migrates
+    to survive adversarial events.
+    A "Persistent Operating System" might offer a Virtual Machine where they are replaced by
+    some persistent handle that abstracts away the mapping between their persistent identity
+    and an underlying transient implementation.
+    A lower-level "Persistent Layer" might instead let the programmers (and their libraries)
+    implement those abstractions themselves—but even then the transient hostname, pid and fds
+    shall only be accessed from within a transient block that covers their lifetime,
+    possibly as part of a dedicated transient thread (for e.g. file descriptors).
+
 All these concerns exist with Manual Persistence as well as with Orthogonal Persistence.
 But with Manual Persistence, the low-level concerns of getting any persistence at all
 create so much work and slows down development so much that these higher-level concerns
@@ -863,6 +889,7 @@ gotta mine these conferences, and more.
 
 Recent work:
 [TreeSLS: A Whole-system Persistent Microkernel with Tree-structured State Checkpoint on NVM](https://dl.acm.org/doi/10.1145/3600006.3613160), SOSP 2023
+[Reducing Write Barrier Overheads for Orthogonal Persistence](https://dl.acm.org/doi/10.1145/3687997.3695646), SLE 2024
 
 Question: see how [Unison](https://www.unison-lang.org/), [Dark](https://darklang.com/) or
 [Val town](https://www.val.town/) and other “infrastructure included” languages
