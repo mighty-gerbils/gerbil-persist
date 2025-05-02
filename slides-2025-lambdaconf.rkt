@@ -6,7 +6,12 @@ Slides for presentation at LambdaConf 2025 in Estes Park, Colorado, 2025-05-12
 
 To compile it, use:
   mkdir -p run
+  ln -s ../nada-poof/util ./
+  ln -s ../../nada-poof/resources run/
+  ln -s ../pics run/
   racket slides-2025-lambdaconf.rkt > run/slides-2025-lambdaconf.html
+where nada-poof is a checkout of
+  https://github.com/metareflection/poof
 
 To test interactively, try:
   racket -i -l scribble/reader -e "(use-at-readtable)" -l racket
@@ -21,6 +26,10 @@ This document is available under the bugroff license.
          (rename-in "util/coop.rkt" (|@| $))
          "util/protodoc.rkt"
          "util/reveal.rkt")
+
+(def (haddock x)
+  (img src: (format "pics/haddock~a.webp" x) alt: (format "panel ~a" x)
+       height: "200vmin" valign: 'top))
 
 (def doc
   (docfix
@@ -64,33 +73,35 @@ This document is available under the bugroff license.
         @;{
              Generate a comic panel in the genre of Hergé.
              Captain Haddock, with a unicorn on his sweater,
-             is sitting on a chair at a café terrace in San Theodoros,
-             with a view on the beach of San Theodoros.
-             He is on the bottom left of the panel;
+             is sitting on a chair at a café terrace in San Theodoros.
+             Haddock is on the bottom left of the panel;
              we see his back, he is turned slightly towards the right of the panel.
-             His is typing on a laptop on the round café table.
-             On the laptop, a white-on-black window on which is display "> foo = 42"
+             He is typing on a laptop on the round café table, next to a glass of whisky.
+             On the laptop, a white-on-black window on which is displayed "> foo = 42"
              and at the next line "> " aligned under the above ">", followed by a blinking underscore cursor.
              On the top left side of the panel,
-             a robber in a hoodie is approaching subreptitiously;
+             a robber in a grey hoodie is approaching subreptitiously;
              you can't see the robber's face, hidden under his hood.
-             In the background, there is a scene of poverty and corruption in the streets of San Theodoros.
+             In the background, the view from the café is the beach of San Theodoros,
+             with a large banner "San Theodoros" greeting people to the beach.
+             There are two poor people on the beach.
 
              Generate a comic panel in the genre of Hergé.
-             Captain Haddock, with a unicorn on his sweater,
-             was sitting at a café terrace in San Theodoros,
-             with a view on the beach of San Theodoros.
-             He is on the bottom left of the panel;
-             we see his back, he is turned slightly towards the right of the panel.
-             he is half-standing instead of sitting, the round café table is falling in front of him.
-             A robber stole the laptop and is running away with it,
-             away from Captain Haddock; he is on the right of the panel, and
-             heading further towards the top right of the panel.
-             Captain Haddock, is cursing "Buccaneer!"
-             and other censored curses, his fist raised;
-             the speech bubble points at Captain Haddock.
-             In the background, there is a continuation of the previous scene of poverty and corruption
-             in the streets of San Theodoros.
+             Captain Haddock, with a unicorn on his sweater, is on the bottom left of the panel;
+             Haddock is at a café terrace, with a view on the beach of San Theodoros
+             on the top left of the panel.
+             We see his back, he is turned slightly towards the right of the panel.
+             Haddock is half-standing instead of sitting, the round café table is wobbling in front of him,
+             and the glass of whisky on it is falling.
+             His laptop is now in the hands of the robber in a gray hoodie that hides his face,
+             who stole it, and who is running away with it, away from Captain Haddock.
+             The robber is on the right of the panel, heading away towards the top right of the panel.
+             Captain Haddock, is cursing "Buccaneer!" and other censored curses.
+             His left hand is on the table, and his right fist is raised. He has only two arms.
+             The speech bubble points at Captain Haddock.
+             In the background, the view from the café is the beach of San Theodoros,
+             with a large banner "San Theodoros" greeting people to the beach.
+             There are two poor people on the beach.
 
              Generate a comic panel in the genre of Hergé.
              We see Captain Haddock with a unicorn on his sweater, flabbergasted,
@@ -100,27 +111,36 @@ This document is available under the bugroff license.
              "Nuevo-Rican missile hits datacenter".
              The voice on the phone, with a speech bubble pointing at the listening part of the phone,
              tells him:
-             "We didn't lose just your data. All data is gone, and we lost many engineers."
+             "Yes, our engineers lost your data. Also everyone else's. Also their lives."
 
              Generate a comic panel in the genre of Hergé.
-             Captain Haddock, with a unicorn on his sweater,
+             On the bottom left of the panel, Captain Haddock, with a unicorn on his sweater,
              is grumbling, sitting laptopless on a plane from San Theodoros back to Marlinspike.
-             He is three quarter facing us and towards the right of the panel.
-             On the porthole behind him, you can see the wing of the plane.
+             He is three quarter face, facing towards the right of the panel.
+             On the porthole in front of him, you can see the wing of the plane he's in.
              The picture of Haddock is itself but an insert in a background map
-             that shows the plane itinerary, going FROM South America (not Africa), back TO Europe.
+             that shows the plane itinerary.
+             The map does not have label, but an arrow that covers the ocean part
+             of the travel only, pointing towards Europe, point from (not towards) Paraguay.
 
              Generate a comic panel in the genre of Hergé.
-             Captain Haddock, with a unicorn on his sweater, home at Marlinspike Hall,
-             is on the grand porch walking from the inside.
-             He is opening his arms and effusively greets a tech support agent
-             bringing a white carton box with a picture of a laptop on it.
-             As he does so, he pushes aside the Marlinskpike butler Nestor
-             who was giving the agent a hard time.
-             Haddock says: "Ah, my savior!"
-             The agent, at the bottom of the steps to the porch,
-             hands the box to Haddock.
-             The agent declares: "It's preinstalled, just enter your credentials"
+             A computer technician is on the bottom right of the panel, seen from his back,
+             at the bottom of the flight of stairs down the grand portico in front of Marlinspike Hall.
+             Captain Haddock on the top left of the panel comes out the door and down the staircase
+             towards the technician to the right of the panel,
+             his arms open wide and high to effusively greet the technician.
+             Haddock says: "Ah my savior!"
+             Haddock is holding a glass of whisky, and the whisky is ejected from the glass by Haddock's
+             sudden arm movement.
+             Nestor the Marlinskpike butler clad in black tailcoat, white shirt, black bowtie,
+             no mustache, balding grayhaired, is standing next to Haddock on the staircase nearer the top of the panel.
+             Nestor is splashed by the whisky on his face.
+             Nestor is startled and tips the platter he was carrying.
+             The bottle of whisky on that platter falls.
+             The technician, turned towards captain Haddock, carries in his hands a white box
+             with a picture of a laptop on it. He offers the box to Captain Haddock.
+             The technician declares: "It's preinstalled, just enter your credentials".
+             The speech bubble for that points to the technician.
 
              Generate a comic panel in the genre of Hergé.
              Captain Haddock, with a unicorn on his sweater,
@@ -131,16 +151,20 @@ This document is available under the bugroff license.
              with white-on-black window on which is display "> foo"
              and at the next line "42" aligned under the above ">",
              and yet on the next line, a prompt "> " aligned as well, followed by a blinking underscore cursor.
-             The captain says contentedly: "Yes! It's still there."
+             Haddock says contentedly: "Yes! All definitions are still there."
+             The speech bubble points at Haddock.
              On the top left side of the panel,
              Nestor the Marlinskpike butler is bringing the captain a bottle of whisky and a glass on a platter.
         ;}
-        @L{At a REPL on your laptop, you define @code{foo}}
+        @(make-table (map (lambda (x) (list (map haddock x))) '((1 2 3) (4 5 6))))
+
+        @;{@L{At a REPL on your laptop, you define @code{foo}}
         @L{You involuntarily donate your laptop to a “youth”}
         @L{Orcs raze your data center}
         @L{Back home, install new laptop, enter credentials}
         @L{Your session is as before, @code{foo} still defined}
-        @L{... yet not a single LoC involved backing up data})
+        @L{... yet not a single LoC involved backing up data};}
+        )
      ($slide "Persistence vs What?"
         @L{Persistence is @em{when your data survives}}
         @L{As with Security: what attack model?}
@@ -155,7 +179,7 @@ This document is available under the bugroff license.
         @L{Orthogonal Persistence (OP) is the Right Thing™}
         @L{Persisting Continuations simplifies everything else}
         @L{Transactions are the wrong abstraction}
-        @L{OP elevates the problems it doesn’t solve}))
+        @L{OP completely solves many problems, elevates the rest}))
     ($section "Today: Fractal Transience"
      $plan-slide
      ($slide @list{Disappointing Users}
@@ -191,29 +215,29 @@ This document is available under the bugroff license.
         @L{Interactions, e.g. Editing Documents, not “Apps”}
         @L{Backup Storage Provider Subscription}) ;; Admin role, can be delegated to accountable party
      ($slide @list{Example Domains}
-        @code{
+        @L{@code{
           (me (work (client1 client2 client3 hr)) @bri
-              (home (cooking kids taxes)) @bri
-              (secret (cia kgb mosad)) @bri
-              (love (wife lover1 lover2)))
-        })
+           @~ (home (cooking kids taxes)) @bri
+           @~ (secret (cia kgb mosad)) @bri
+           @~ (love (wife lover1 lover2)))
+        }})
      ($slide @list{Domains}
         @L{User creates sub-domains}
         @L{Origin Domain Validates Copy Out / Share Out}
         @L{Destination Domain Validates Paste In / Share In}
-        @L{Attach Storage Providers})
+        @L{Resource Accounting, Storage Providers})
      ($slide @list{Document}
-        @L{Edit it}
+        @L{Edit, Interact at will}
         @L{Always Saved}
         @L{Not always publishable}
         @L{Share some versions with some people, one way or both}))
     ($section "Orthogonal Persistence for Developers"
      $plan-slide
      ($slide @list{Just Do It}
-        @L{Variables “just” persist}
-        @L{Eliminate 30%-70% of all code}
-        @L{No more save and restore}
-        @L{Literally torture and shoot dead anyone who tries})
+        @L{Variables and @em{Processes} “just” persist, can be shared}
+        @L{No more save and restore, copy and send}
+        @L{Eliminate 30%-70% of all code — just for variables}
+        @L{Processes may no longer fail mid-invariant})
      ($slide @list{Capabilities: Photo App}
         @L{Photo App: save... over net... download extensions} ;; also camera, etc.
         @L{Regular App: will compromise your entire computer}
@@ -223,7 +247,7 @@ This document is available under the bugroff license.
         @L{Fewer things to think about} ;; for AIs as well as humans
         @L{Fewer things to get wrong}
         @L{Smaller attack surface}
-        @L{Who attempts to use extra capabilities as hostile})
+        @L{Whoever reaches for forbidden capabilities is hostile})
      ;; Knife at home being normal vs abnormal and threat detection (food pre-cut)
      ;; Fire at home being normal vs abnormal and autosprinkler (candles, cigarettes)
      ($slide @list{Full Abstraction}
@@ -239,20 +263,22 @@ This document is available under the bugroff license.
     ($section "Programming Model for Orthogonal Persistence"
      $plan-slide
      ($slide @list{Manual Persistence Sucks}
-        @L{PL: Everything Transient—except complex storage protocols}
-        @L{DB: Everything Table—except Queues, Procedures...}
+        @L{PL: Everything Transient—but via complex storage protocols}
+        @L{DB: Everything a Table—but Queues, Procedures...}
         @L{Everyone: Processes are inherently transient}
-        @L{No eff* way to persist dynamic code, continuations})
+        @L{No eff* way to persist continuations or dynamic code})
      ($slide @list{Transactions are Bad}
         @L{Require Global Knowledge}
         @L{Don't Compose}
         @L{Always too small or too big}
-        @L{Low Level Concept})
-     ($slide @list{Anti-Transactions are Good}
+        @L{Low Level Concept, no one wants to use}
+        @L{... Necessary because processes don't persist})
+     ($slide @list{Anti-Transactions are Good} ;; Critically requires processes to persist!
         @L{“Don't transact here”, a.k.a. Critical Section}
         @L{Section itself small, code that uses it large}
         @L{Local Knowledge Only, Composable}
-        @L{High-Level Concept, already used everywhere})
+        @L{High-Level Concept, already used everywhere}
+        @L{... Possible because processes do persist})
      ($slide @list{Don’t Commit, Synchronize}
         @L{Local constraint, automatically fulfilled}
         @L{Always persist private data before to publish transaction}
@@ -265,26 +291,26 @@ This document is available under the bugroff license.
         @L{Databases don't (de)compose}) ;; federating databases: ouch. Adding backends: ouch.
      ($slide @list{Domains are Good}
         @L{Works with your data model, execution model, PL}
-        @L{Identity not tied to a machine, vendor, etc.}
+        @L{Identity not tied to a disk, machine, vendor, etc.}
         @L{Dynamically add or remove backends}
         @L{Dynamically join (sub)Domains in consensus}))
     ($section "Decoupling Issues from Persistence"
      $plan-slide
      ($slide @list{Never Save and Copy, Publish and Share}
         @L{Never Save, Tag Stable Versions}
-        @L{Never Copy, Fork and Join versions… of Processes} ;; entire workspace in git
-        @L{Never Copy, (Un)Publish and Share (Sub)Documents}
+        @L{Never Copy and Modify, Fork Versions} ;; entire workspace in git
+        @L{Never Copy and Send, Publish and Share}
         @L{Never Forget, Cache and Remember}) ;; preserve identity not just content
-     ($slide @list{Never OOM to death, manage quotas}
+     ($slide @list{Never get OOM, manage quotas}
         @L{Stop processes & escape to metasystem}
-        @L{Adjust: increase quota, GC, fix bug…}
-        @L{Kill maybe, but also Restart} ;; either way, user-level PCLSRing
-        @L{Meta: Predict usage, anticipate increase})
-     ($slide @list{Never Migrate, Just Upgrade Schema or Change Backends}
-        @L{Schema Upgrade, Change Backends are expected}
-        @L{Schema Upgrade built into PL, testing}
-        @L{Always persist private data before to publish transaction}
-        @L{Schema Upgrade is always eventually expected.})
+        @L{Adjust and Restart: increase quota, GC, fix bug…} ;; either way, user-level PCLSRing
+        @L{Meta: Predict usage, anticipate increase} ;; unlike today, don't lose coupling of live code and data
+        @L{Remember correlation of live code and data}) ;; unlike today
+     ($slide @list{Never Migrate, Upgrade and Reconfigure}
+        @L{All Schema, Backends will eventually get obsolete}
+        @L{Schema Upgrade support in PL, testing}
+        @L{Reconfigure backends, no lock-in to hw, sw, vendor}
+        @L{Normal operations, not million-dollar crises})
      ($slide @list{Never Corrupt, Maintain}
         @L{No Corruption-prone yet Static language}
         @L{Low-level or transient code in isolated VMs within Domain}
@@ -299,18 +325,19 @@ This document is available under the bugroff license.
         @L{Run legacy code in managed VMs}) ;; Legacy
      ($slide @list{Economic Implications: New Markets}
         @L{Documents and Modules, not Apps}
-        @L{Competing Blind Storage, not Vertical Mopolonies}
-        @L{Local Code, not Spying Ad Servers}
-        @L{Admin Delegation, under User Control})
+        @L{Local Code, not Spying Advertising App Servers}
+        @L{Competing Blind Storage, not Vertical Monopolies}
+        @L{Admins answer to Users, not to App Vendors})
      ($slide @list{Social Implications: Better Division of Labor}
         @L{Users: Empowered, Refocused—Can Delegate Admin}
         @L{Developers: Less Repetition, More Specialization}
         @L{Providers: Breaking Vertical Monopolies}
         @L{Defenders: Better Control on Smaller Attack Surfaces})
      ($slide @list{Thank You!}
-        @Li{Model: @Url{https://github.com/mighty-gerbils/gerbil-persist/blob/master/persist.md}}
-        @Li{Looking for funding…}
-        @Li{X: @Url{https://x.com/ngnghm}  Blog: @Url{https://ngnghm.github.io}}
-        @Li{Hire me — or be hired by me! @(~ 5) @code{<fare@"@"mukn.com>}}))))
+        @Li{Model: @Url{https://github.com/mighty-gerbils/gerbil-persist}}
+        @Li{X: @Url{https://x.com/ngnghm}}
+        @Li{Blog: @Url{https://ngnghm.github.io}}
+        @Li{Fund me — Hire me — or be hired by me!}
+        @C{@code{<fare@"@"mukn.com>}}))))
 
 (reveal-doc doc)
