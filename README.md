@@ -3,8 +3,7 @@
 Gerbil-persist is a package to persist concurrent processes as well as data.
 It aims at implementing robust [**Orthogonal Persistence**](persist.md).
 The document linked above explains the programming model we are aiming at.
-See our upcoming presentation at LambdaConf 2025
-(that we will post here after the conference).
+See our upcoming presentation at LambdaConf 2025 [[slides](http://fare.tunes.org/files/cs/persist/slides-2025-lambdaconf.html), videos to be posted here after the conference].
 
 The rest of this README explains where we’re at.
 ***The implementation is nowhere near finished; actually it is barely begun.***
