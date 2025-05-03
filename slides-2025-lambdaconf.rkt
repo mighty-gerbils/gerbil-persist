@@ -29,7 +29,7 @@ This document is available under the bugroff license.
 
 (def (haddock x)
   (img src: (format "pics/haddock~a.webp" x) alt: (format "panel ~a" x)
-       height: "200vmin" valign: 'top))
+       height: "250vmin" valign: 'top))
 
 (def doc
   (docfix
@@ -69,7 +69,7 @@ This document is available under the bugroff license.
              @td{Touchscreen: swipe down until you must swipe right}})]))
     ($section "Prelude: Orthogonal Persistence?"
      $plan-slide
-     ($slide "A Simple Story"
+     ($slide "A Simple Story (1)"
         @;{
              Generate a comic panel in the genre of Hergé.
              Captain Haddock, with a unicorn on his sweater,
@@ -156,25 +156,27 @@ This document is available under the bugroff license.
              On the top left side of the panel,
              Nestor the Marlinskpike butler is bringing the captain a bottle of whisky and a glass on a platter.
         ;}
-        @(make-table (map (lambda (x) (list (map haddock x))) '((1 2 3) (4 5 6))))
+        @(make-table (map (lambda (x) (list (map haddock x))) '((1 2 3)))))
+     ($slide "A Simple Story (2)"
+        @(make-table (map (lambda (x) (list (map haddock x))) '((4 5 6))))
 
         @;{@L{At a REPL on your laptop, you define @code{foo}}
         @L{You involuntarily donate your laptop to a “youth”}
         @L{Orcs raze your data center}
         @L{Back home, install new laptop, enter credentials}
         @L{Your session is as before, @code{foo} still defined}
-        @L{... yet not a single LoC involved backing up data};}
+        @L{... yet not a single LoC involved backing up data};} ;; Actually, most code is forbidden to even try to back up data.
         )
      ($slide "Persistence vs What?"
         @L{Persistence is @em{when your data survives}}
-        @L{As with Security: what attack model?}
-        @L{Unexpected: power loss, accident, theft, fire, war}
+        @L{BUT! Failure model: @em{what} does it survive?} ;; Compare with the notion of Attack Model wrt Security claims
+        @L{Unexpected: power loss, accident, @em{hack}, theft, fire, war}
         @L{Expected: hardware and software end-of-life})
-     ($slide @list{History}
+     ($slide @list{Old Tech Made New Again}
         @L{OODB 1980s-now: Lisp, Smalltalk, C++, Java...} ;; Continuations don't persist!
-        @L{1980s-1990s: EUMEL, EROS… Little research 2000s-2010s.}
+        @L{1980s-1990s: EUMEL, EROS… Funding dried 2000s-2010s.} ;; A few do persist continuations. Grasshopper. Funding dried.
         @L{Today “Durable Execution”. Renewed research.}
-        @L{Me: My good old HP28})
+        @L{Me: From my good old HP28 to ORMs to StrongBOX })
      ($slide @list{Thesis}
         @L{Orthogonal Persistence (OP) is the Right Thing™}
         @L{Persisting Continuations simplifies everything else}
@@ -333,11 +335,38 @@ This document is available under the bugroff license.
         @L{Developers: Less Repetition, More Specialization}
         @L{Providers: Breaking Vertical Monopolies}
         @L{Defenders: Better Control on Smaller Attack Surfaces})
-     ($slide @list{Thank You!}
-        @Li{Model: @Url{https://github.com/mighty-gerbils/gerbil-persist}}
-        @Li{X: @Url{https://x.com/ngnghm}}
-        @Li{Blog: @Url{https://ngnghm.github.io}}
-        @Li{Fund me — Hire me — or be hired by me!}
-        @C{@code{<fare@"@"mukn.com>}}))))
+     ($slide @list{Orthogonal Persistence's Time Has Come!}
+        @L{Whoever makes it usable first will redefine the industry}
+        @L{Model: @Url{https://github.com/mighty-gerbils/gerbil-persist}}
+        @L{X: @Url{https://x.com/ngnghm} @Li{Blog: @Url{https://ngnghm.github.io}}}
+        @L{Fund me — or be hired by me! @code{<fare@"@"mukn.com>}}))))
 
 (reveal-doc doc)
+
+
+#|
+TODO:
+make it clear in the story it's for users, not just for developers
+show examples of persisting data with ChatGPT generated code in Python vs in TScheme
+Using AI in Python without strongbox is a huge security risk
+Using AI in TScheme with strongbox is A-OK
+
+Focus 100% on business logic
+
+MV: on every slide, have the first part (3/4) accessible to everybody, including end-users.
+MV: only last 1/4 of the slide for the programmer.
+...
+and what does the programmer have to do to support it?
+...
+Traditional system...
+vs
+Our system...
+
+We can be the Wright Brothers (or Henry Ford) of Orthogonal Persistence.
+They were not the only ones trying to get fly , but they
+--- the first ones to get it off the ground for real.
+We are the times when SOMEONE will get it right.
+You can be the ones who get the magic ticket.
+Whoever gets it right will have a lot of control on the future.
+
+|#
