@@ -124,23 +124,26 @@ This document is available under the bugroff license.
              of the travel only, pointing towards Europe, point from (not towards) Paraguay.
 
              Generate a comic panel in the genre of Hergé.
+             At the top left of the panel is the grand portico of Marlinspike Hall,
+             with a staircase going down from it towards the right.
+             At the bottom right of the panel is the bottom of the staircase, at street level.
              A computer technician is on the bottom right of the panel, seen from his back,
-             at the bottom of the flight of stairs down the grand portico in front of Marlinspike Hall.
-             Captain Haddock on the top left of the panel comes out the door and down the staircase
-             towards the technician to the right of the panel,
-             his arms open wide and high to effusively greet the technician.
-             Haddock says: "Ah my savior!"
-             Haddock is holding a glass of whisky, and the whisky is ejected from the glass by Haddock's
-             sudden arm movement.
+             at the bottom of the staircase.
+             Captain Haddock, with a unicorn on his sweater,
+             is on the top of left of the panel facing right and walking down the staircase,
+             and whisky is ejected from the glass in his hand as as he suddenly opens his arms wide and high
+             to effusively greet the technician.
+             The technician, to the right of the panel, turned towards captain Haddock,
+             carries in his hands a white box with a picture of a laptop on it.
+             He offers the box to Captain Haddock.
+             A speech bubble from Haddock says: "Ah my savior!"
+             Another speech bubble from the technician declares: "It's preinstalled, just enter your credentials".
+
              Nestor the Marlinskpike butler clad in black tailcoat, white shirt, black bowtie,
              no mustache, balding grayhaired, is standing next to Haddock on the staircase nearer the top of the panel.
              Nestor is splashed by the whisky on his face.
              Nestor is startled and tips the platter he was carrying.
              The bottle of whisky on that platter falls.
-             The technician, turned towards captain Haddock, carries in his hands a white box
-             with a picture of a laptop on it. He offers the box to Captain Haddock.
-             The technician declares: "It's preinstalled, just enter your credentials".
-             The speech bubble for that points to the technician.
 
              Generate a comic panel in the genre of Hergé.
              Captain Haddock, with a unicorn on his sweater,
@@ -159,47 +162,48 @@ This document is available under the bugroff license.
         @(make-table (map (lambda (x) (list (map haddock x))) '((1 2 3)))))
      ($slide "A Simple Story (2)"
         @(make-table (map (lambda (x) (list (map haddock x))) '((4 5 6))))
-
-        @;{@L{At a REPL on your laptop, you define @code{foo}}
+        @;{
+        @L{At a REPL on your laptop, you define @code{foo}}
         @L{You involuntarily donate your laptop to a “youth”}
         @L{Orcs raze your data center}
         @L{Back home, install new laptop, enter credentials}
         @L{Your session is as before, @code{foo} still defined}
-        @L{... yet not a single LoC involved backing up data};} ;; Actually, most code is forbidden to even try to back up data.
+        @L{... yet not a single LoC involved backing up data} ;; Actually, most code is forbidden to even try to back up data.
+        @;}
         )
      ($slide "Persistence vs What?"
         @L{Persistence is @em{when your data survives}}
         @L{BUT! Failure model: @em{what} does it survive?} ;; Compare with the notion of Attack Model wrt Security claims
         @L{Unexpected: power loss, accident, @em{hack}, theft, fire, war}
         @L{Expected: hardware and software end-of-life})
-     ($slide @list{Old Tech Made New Again}
+     ($slide "Old Tech Made New Again"
         @L{OODB 1980s-now: Lisp, Smalltalk, C++, Java...} ;; Continuations don't persist!
         @L{1980s-1990s: EUMEL, EROS… Funding dried 2000s-2010s.} ;; A few do persist continuations. Grasshopper. Funding dried.
         @L{Today “Durable Execution”. Renewed research.}
-        @L{Me: From my good old HP28 to ORMs to StrongBOX })
-     ($slide @list{Thesis}
+        @L{Me: From my good old HP28 to ORMs to this vision}) ;; All the old technology with a new twist to make it usable by regular people
+     ($slide "Thesis"
         @L{Orthogonal Persistence (OP) is the Right Thing™}
         @L{Persisting Continuations simplifies everything else}
         @L{Transactions are the wrong abstraction}
         @L{OP completely solves many problems, elevates the rest}))
     ($section "Today: Fractal Transience"
      $plan-slide
-     ($slide @list{Disappointing Users}
+     ($slide "Disappointing Users"
         @L{My mom's book database}
         @L{C-x C-s in my fingers}
         @L{Who never lost data to no/bad/lost backups?}
         @L{... Don't modern Apps autopersist data?})
-     ($slide @list{Vendor Lock-In Persistence}
+     ($slide "Vendor Lock-In Persistence"
         @L{Only easy case: won't sync across devices, accounts...}
         @L{Forced Code Upgrade or Lack Thereof}
         @L{Product Cancellation, Change of Ownership, Bankruptcy}
         @L{Data Hostage: pay bills & pray Vendor healthy})
-     ($slide @list{Developers: Hard Mode}
+     ($slide "Developers: Hard Mode"
         @L{Computers, processes, etc., start empty}
         @L{Explicitly save and restore all data} ;; old IBM study: 30% is (un)marshalling. Not counting error recovery.
         @L{Storage Zoo: FS, DB, Web, git...}
         @L{Fake it the hard way, and Admin the mess})
-     ($slide @list{Hard Problems}
+     ($slide "Hard Problems"
         @L{Managing Many Out-of-Sync Copies}
         @L{Fragile Backups}
         @L{Schema Upgrades}
@@ -211,143 +215,148 @@ This document is available under the bugroff license.
         @L{Hard problems are made easier somehow?}))
     ($section "Orthogonal Persistence for Users"
      $plan-slide
-     ($slide @list{It's Just There}
+     ($slide "It’s Just There"
         @L{Data “just” persists}
         @L{Code runs in ambient “domain”}
         @L{Interactions, e.g. Editing Documents, not “Apps”}
         @L{Backup Storage Provider Subscription}) ;; Admin role, can be delegated to accountable party
-     ($slide @list{Example Domains}
+     ($slide "Example Domains"
         @L{@code{
           (me (work (client1 client2 client3 hr)) @bri
-           @~ (home (cooking kids taxes)) @bri
+           @~ (home (taxes kids cooking)) @bri
            @~ (secret (cia kgb mosad)) @bri
            @~ (love (wife lover1 lover2)))
         }})
-     ($slide @list{Domains}
+     ($slide "Domains"
         @L{User creates sub-domains}
         @L{Origin Domain Validates Copy Out / Share Out}
         @L{Destination Domain Validates Paste In / Share In}
         @L{Resource Accounting, Storage Providers})
-     ($slide @list{Document}
+     ($slide "Document"
         @L{Edit, Interact at will}
         @L{Always Saved}
         @L{Not always publishable}
         @L{Share some versions with some people, one way or both}))
     ($section "Orthogonal Persistence for Developers"
      $plan-slide
-     ($slide @list{Just Do It}
-        @L{Variables and @em{Processes} “just” persist, can be shared}
+     ($slide "Just Do It"
+        @L{Variables and @em{Processes} “just” persist, can be shared} ;; not "Unix" processes...
         @L{No more save and restore, copy and send}
         @L{Eliminate 30%-70% of all code — just for variables}
         @L{Processes may no longer fail mid-invariant})
-     ($slide @list{Capabilities: Photo App}
+     ($slide "Capabilities: Photo App"
         @L{Photo App: save... over net... download extensions} ;; also camera, etc.
         @L{Regular App: will compromise your entire computer}
         @L{Persistent App: can only edit given picture}
         @L{Wider Reflective Capability Architecture})
-     ($slide @list{Security Improvement}
+     ($slide "Security Improvement"
         @L{Fewer things to think about} ;; for AIs as well as humans
         @L{Fewer things to get wrong}
         @L{Smaller attack surface}
         @L{Whoever reaches for forbidden capabilities is hostile})
      ;; Knife at home being normal vs abnormal and threat detection (food pre-cut)
      ;; Fire at home being normal vs abnormal and autosprinkler (candles, cigarettes)
-     ($slide @list{Full Abstraction}
+     ($slide "Full Abstraction"
         @L{Strong Separation of concerns} ;; blind quantifiers, parametric polymorphism
         @L{App developer not allowed to see how data is persisted}
         @L{Persistence Implementer not allowed to see data}
         @L{User or Admin can configure service and providers})
-     ($slide @list{Storage Providers}
+     ($slide "Storage Providers"
         @L{All data encrypted with use-once salt} ;; regular disk encryption: two-time pad
         @L{Add/Remove Provider... independent worldwide replicas}
         @L{Management layer handles RAID replication}
         @L{Financial layer plans (un)subscriptions}))
     ($section "Programming Model for Orthogonal Persistence"
      $plan-slide
-     ($slide @list{Manual Persistence Sucks}
+     ($slide "Manual Persistence Sucks"
         @L{PL: Everything Transient—but via complex storage protocols}
         @L{DB: Everything a Table—but Queues, Procedures...}
         @L{Everyone: Processes are inherently transient}
         @L{No eff* way to persist continuations or dynamic code})
-     ($slide @list{Transactions are Bad}
+     ($slide "Transactions are Bad"
         @L{Require Global Knowledge}
         @L{Don't Compose}
         @L{Always too small or too big}
         @L{Low Level Concept, no one wants to use}
         @L{... Necessary because processes don't persist})
-     ($slide @list{Anti-Transactions are Good} ;; Critically requires processes to persist!
+     ($slide "Anti-Transactions are Good" ;; Critically requires processes to persist!
         @L{“Don't transact here”, a.k.a. Critical Section}
         @L{Section itself small, code that uses it large}
         @L{Local Knowledge Only, Composable}
         @L{High-Level Concept, already used everywhere}
         @L{... Possible because processes do persist})
-     ($slide @list{Don’t Commit, Synchronize}
+     ($slide "Don’t Commit, Synchronize"
         @L{Local constraint, automatically fulfilled}
         @L{Always persist private data before to publish transaction}
         @L{Just like memory barriers in modern processors}
         @L{High-Level Concept, already used everywhere})
-     ($slide @list{Databases are Bad}
+     ($slide "Databases are Bad"
         @L{Package deal persistence w/ data & execution model} ;; relational, speculative. You don't program in APL.
         @L{Database come with really bad PL} ;; pgsql, oracle sql, etc.
         @L{Databases themselves don't persist} ;; identity tied to a physical/logical machine, a software vendor, etc.
         @L{Databases don't (de)compose}) ;; federating databases: ouch. Adding backends: ouch.
-     ($slide @list{Domains are Good}
+     ($slide "Domains are Good"
         @L{Works with your data model, execution model, PL}
-        @L{Identity not tied to a disk, machine, vendor, etc.}
+        @L{Identity not tied to a disk, machine, vendor, etc.} ;; missing concept: reified handling of identity. Address, URL
         @L{Dynamically add or remove backends}
         @L{Dynamically join (sub)Domains in consensus}))
     ($section "Decoupling Issues from Persistence"
      $plan-slide
-     ($slide @list{Never Save and Copy, Publish and Share}
+     ($slide "Never Save and Copy, Publish and Share"
         @L{Never Save, Tag Stable Versions}
         @L{Never Copy and Modify, Fork Versions} ;; entire workspace in git
         @L{Never Copy and Send, Publish and Share}
         @L{Never Forget, Cache and Remember}) ;; preserve identity not just content
-     ($slide @list{Never get OOM, manage quotas}
+     ($slide "Never get OOM, manage quotas"
         @L{Stop processes & escape to metasystem}
         @L{Adjust and Restart: increase quota, GC, fix bug…} ;; either way, user-level PCLSRing
         @L{Meta: Predict usage, anticipate increase} ;; unlike today, don't lose coupling of live code and data
         @L{Remember correlation of live code and data}) ;; unlike today
-     ($slide @list{Never Migrate, Upgrade and Reconfigure}
+     ($slide "Never Migrate, Upgrade and Reconfigure"
         @L{All Schema, Backends will eventually get obsolete}
         @L{Schema Upgrade support in PL, testing}
         @L{Reconfigure backends, no lock-in to hw, sw, vendor}
         @L{Normal operations, not million-dollar crises})
-     ($slide @list{Never Corrupt, Maintain}
+     ($slide "Never Corrupt, Maintain"
         @L{No Corruption-prone yet Static language}
         @L{Low-level or transient code in isolated VMs within Domain}
         @L{Live systems to cultivate, not dead programs to throw away}
         @L{Debug using reflection within version forks}))
     ($section "Conclusion: Consequences of Orthogonal Persistence"
      $plan-slide
-     ($slide @list{Different Software Architecture}
+     ($slide "Thesis (Recap)"
+        @L{Orthogonal Persistence (OP) is the Right Thing™}
+        @L{Persisting Continuations simplifies everything else}
+        @L{Transactions are the wrong abstraction}
+        @L{OP completely solves many problems, elevates the rest})
+     ($slide "Different Software Architecture"
         @L{Reflection, Capabilities, Versioning, Upgrade, Consensus…} ;; Different APIs
         @L{Pervasive changes throughout all system} ;; No save, no copy
         @L{Change mindset from PL to System Paradigm}
         @L{Run legacy code in managed VMs}) ;; Legacy
-     ($slide @list{Economic Implications: New Markets}
+     ($slide "Economic Implications: New Markets"
         @L{Documents and Modules, not Apps}
         @L{Local Code, not Spying Advertising App Servers}
         @L{Competing Blind Storage, not Vertical Monopolies}
         @L{Admins answer to Users, not to App Vendors})
-     ($slide @list{Social Implications: Better Division of Labor}
+     ($slide "Social Implications: Better Division of Labor"
         @L{Users: Empowered, Refocused—Can Delegate Admin}
         @L{Developers: Less Repetition, More Specialization}
         @L{Providers: Breaking Vertical Monopolies}
         @L{Defenders: Better Control on Smaller Attack Surfaces})
-     ($slide @list{Orthogonal Persistence's Time Has Come!}
+     ($slide "Orthogonal Persistence's Time Has Come!"
         @L{Whoever makes it usable first will redefine the industry}
         @L{Model: @Url{https://github.com/mighty-gerbils/gerbil-persist}}
-        @L{X: @Url{https://x.com/ngnghm} @Li{Blog: @Url{https://ngnghm.github.io}}}
+        @L{X: @Url{https://x.com/ngnghm} @br Blog: @Url{https://ngnghm.github.io}}
         @L{Fund me — or be hired by me! @code{<fare@"@"mukn.com>}}))))
 
 (reveal-doc doc)
 
 
 #|
-TODO:
-make it clear in the story it's for users, not just for developers
-show examples of persisting data with ChatGPT generated code in Python vs in TScheme
+MV:
+Make it clear in the story it's for users, not just for developers
+Show examples of persisting data with ChatGPT generated code in Python vs in TScheme
 Using AI in Python without strongbox is a huge security risk
 Using AI in TScheme with strongbox is A-OK
 
@@ -368,5 +377,26 @@ They were not the only ones trying to get fly , but they
 We are the times when SOMEONE will get it right.
 You can be the ones who get the magic ticket.
 Whoever gets it right will have a lot of control on the future.
+
+DN: No libertarian jokes
+
+DN: What kind of thign is this?
+- OP is an old context
+- New take on OP
+
+DN: Backups are the hardest thing to incentivize:
+it's the kind of encrypted data that users generate and nobody, not even themselves, usually need.
+Requires protocol wherein the client regularly polls the data.
+F: decentralized is better if possible, but not necessary for persistence
+
+DN: long-standing "persistent" issue that memory, background storage and network have very different speed and latency.
+Some chinese companies have developed locally persistent memory as fast as RAM.
+This and very fast network means you can "just" persist everything all the time in a low-level way
+without improving the architecture.
+
+DN: General intelligence comes from three things together: minds, literacy and markets.
+Local persistence is sort of solved. However, over time, entropy increases, lots of tabs are opened.
+Restarting is nearly necessary. Blank slates are necessary. Life and death are necessary for evolution.
+F: Good problem to have. Problem elevated / revealed by solving
 
 |#
