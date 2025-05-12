@@ -434,4 +434,5 @@ In particular we are (1) abstracting away the underlying key-value store, and
 * [DBOS.dev](https://DBOS.dev) puts the OS on top of the DB rather than the other way around.
 * [BlueStore backend for Ceph distributed filesystem](https://x.com/petereliaskraft/status/1906420979896893823)
 * [A Transaction Model](https://jimgray.azurewebsites.net/papers/A%20Transaction%20Model%20RJ%202895.pdf) by Jim Gray (1980)
-
+* [Logica](https://logica.dev/), logic programming language that compiles to SQL
+* [PostgREST](https://docs.postgrest.org/en/v12/), REST app server in pgsql
