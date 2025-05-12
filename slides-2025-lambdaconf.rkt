@@ -253,7 +253,7 @@ This document is available under the bugroff license.
         @L{Processes may no longer fail mid-invariant})
      ($slide "Capabilities"
         @L{Photo App: save... over net... download extensions} ;; also camera, etc.
-        @L{Transient System: App will compromise your entire computer}
+        @L{Transient System: App can compromise everything}
         @L{Persistent System: App can only edit given picture}
         @L{Wider Reflective Capability Architecture})
      ($slide "Security Improvement"
@@ -274,7 +274,7 @@ This document is available under the bugroff license.
         @L{Add/Remove Provider... independent worldwide replicas}
         @L{Management layer handles RAID replication}
         @L{Financial layer plans (un)subscriptions}))
-    ($section "Programming Model for Orthogonal Persistence"
+    ($section "Programming Model for Fractal Transience"
      $plan-slide
      ($slide "Transient Programming Languages Sucks"
         @L{PL: Everything is Transient—especially processes}
@@ -283,14 +283,21 @@ This document is available under the bugroff license.
         @L{Persistence relies on wetware conventions})
      ($slide "Databases are Bad (1)"
         @L{Atomicity, but very bad Package Deal}
+        @L{Terrible programming languages} ;; pgsql, oracle sql, etc.
         @L{Horrible Data Model: Everything is a Table, except…} ;; Queues, Procedures. Very few want to program with tables. They use Spreadsheets or APL. Sometimes only one table. Store JSON.
-        @L{Horrible Evaluation Model: client/server split, speculation…} ;; split between "client" and "server". Speculation to increase server number but
-        @L{Terrible programming languages}) ;; pgsql, oracle sql, etc.
+        @L{Horrible Evaluation Model: client/server split, speculation…}) ;; split between "client" and "server". Speculation to increase server number but
      ($slide "Databases are Bad (2)"
         @L{No eff* way to persist processes or user-defined code}
         @L{Databases themselves don’t persist} ;; identity tied to a physical/logical machine, a software vendor, etc.
         @L{Databases don’t (de)compose} ;; federating databases: ouch. Adding backends: ouch.
         @L{Rigid Capabilities, Rigid Schema})
+     ($slide "System Myopia"
+        @C{A programming language without good data persistence is @br
+           for toy computations about irrelevant data.}
+        @C{A database without a good programming language is @br
+           for toy data not part of any relevant computation.}))
+    ($section "Programming Model for Orthogonal Persistence"
+     $plan-slide
      ($slide "Transactions are Bad"
         @L{Require Global Knowledge}
         @L{Don’t Compose}
