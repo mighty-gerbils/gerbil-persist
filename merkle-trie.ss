@@ -47,9 +47,10 @@
                        ((Branch _ l r) (f @ l) (f @ r))
                        ((Skip _ _ _ c) (f @ c)))) }
   Digested: {(:: @D [DigestedTrie.]) Key Height Value .digesting}
-  .proof<-: (lambda (trie key)
-              (match (.refocus ($Costep -1 key) (.zipper<- trie))
-                ([sub . up] (cons sub (.call Path .map .digest<- up)))))
+  .proof<-: ;; : (Path Digest)
+  (lambda (trie key)
+    (match (.refocus ($Costep -1 key) (.zipper<- trie))
+      ([sub . up] (cons sub (.call Path .map .digest<- up)))))
   .validate-proof:
   (lambda (trie-digest sub up)
     (match (.unwrap sub)

@@ -3,7 +3,10 @@
 Gerbil-persist is a package to persist concurrent processes as well as data.
 It aims at implementing robust [**Orthogonal Persistence**](persist.md).
 The document linked above explains the programming model we are aiming at.
-The rest of this README explains where we’re at, which is nowhere near finished.
+See our upcoming presentation at LambdaConf 2025 [[slides](http://fare.tunes.org/files/cs/persist/slides-2025-lambdaconf.html), videos to be posted here after the conference].
+
+The rest of this README explains where we’re at.
+***The implementation is nowhere near finished; actually it is barely begun.***
 
 ## A Persistence Short Story
 
@@ -436,3 +439,7 @@ In particular we are (1) abstracting away the underlying key-value store, and
 - [An Introduction to Bε-trees and Write-Optimization](https://www.usenix.org/publications/login/oct15/bender)
 - [Revisiting B+-tree vs. LSM-tree](https://www.usenix.org/publications/loginonline/revisit-b-tree-vs-lsm-tree-upon-arrival-modern-storage-hardware-built)
 - [DBOS.dev](https://DBOS.dev) puts the OS on top of the DB rather than the other way around.
+- [BlueStore backend for Ceph distributed filesystem](https://x.com/petereliaskraft/status/1906420979896893823)
+- [A Transaction Model](https://jimgray.azurewebsites.net/papers/A%20Transaction%20Model%20RJ%202895.pdf) by Jim Gray (1980)
+- [Logica](https://logica.dev/), logic programming language that compiles to SQL
+- [PostgREST](https://docs.postgrest.org/en/v12/), REST app server in pgsql
