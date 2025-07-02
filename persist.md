@@ -10,7 +10,10 @@ Yet not one single instructions in any of your applications ever had
 to even mention anything about storage and retrieval.
 
 [This paper presents an original re-framing of Orthogonal Persistence,
-as refactored into a simple set of concepts in March 2024.]
+as refactored into a simple set of concepts in March 2024.
+See our presentation at LambdaConf 2025:
+[video](https://youtu.be/stEl-RBJVdA) and
+[slides](http://fare.tunes.org/files/cs/persist/slides-2025-lambdaconf.html).]
 
 ## Orthogonal Persistence: Computations that Matter on Data that Matters
 
