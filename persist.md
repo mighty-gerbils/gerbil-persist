@@ -594,13 +594,13 @@ The mutual exclusion mechanism is local and lightweight, efficient and scalable;
 it doesn’t force any global reorganization of your code,
 any specific data model, any specific control flow model.
 
-If concurrency had a “solution” for atomicity similar to transactions
+If concurrency had a “solution” for atomicity that behaves like transactions
 “solve” atomicity for databases, it would look like this:
 instead of local `with-lock` thunks, you must organize your code in
 global “transactions” thunks containing everything that affects application state
 without starting or ending inside a `with-lock` statement.
 That’s an inversion of control;
-to be done manually in languages without call/cc.
+to be done manually in languages without `call/cc`.
 Moreover, control flow outside transactions is considered unreliable, such that
 any control flow state required to ensure application invariants must be
 explicitly reified within the transaction (see Persisting Execution Context below).
@@ -618,7 +618,7 @@ That’s what transactions for concurrency would be, and what transactions for d
 If this design sounds completely crazy, that’s because it is.
 Yet that is what university professors haugthily teach,
 what billion-dollar data expert businesses sell,
-and what every else pays billions of dollars to buy and use.
+and what everyone else pays billions of dollars to buy and use.
 Analyzing the ins and outs of this madness would require its own separate essay.
 
 ### Persisting Execution Context
