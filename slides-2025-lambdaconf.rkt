@@ -67,29 +67,35 @@ This document is available under the bugroff license.
      $plan-slide
      ($slide "A Simple Story (1)"
         @;{
-             Generate a comic panel in the genre of Hergé.
-             Captain Haddock, with a unicorn on his sweater,
+             Generate a single comic panel in the clear line style of Hergé’s Tintin.
+             Captain Haddock, with a unicorn on his blue sweater,
+             his usual black sailor cap, and familiar black beard,
              is sitting on a chair at a café terrace in San Theodoros.
              Haddock is on the bottom left of the panel;
              we see his back, he is turned slightly towards the right of the panel.
              He is typing on a laptop on the round café table, next to a glass of whisky.
              On the laptop, a white-on-black window on which is displayed "> foo = 42"
-             and at the next line "> " aligned under the above ">", followed by a blinking underscore cursor.
+             and at the next line "> " aligned under the above ">",
+             followed by a blinking underscore cursor. The rest of the screen is blank.
              On the top left side of the panel,
-             a robber in a grey hoodie is approaching subreptitiously;
+             a robber in a grey hoodie is approaching surreptitiously;
              you can’t see the robber’s face, hidden under his hood.
              In the background, the view from the café is the beach of San Theodoros,
              with a large banner "San Theodoros" greeting people to the beach.
              There are two poor people on the beach.
 
              Generate a comic panel in the genre of Hergé.
-             Captain Haddock, with a unicorn on his sweater, is on the bottom left of the panel;
+             Captain Haddock, with a unicorn on his sweater, and his familiar sailor cap,
+             is on the bottom left of the panel;
              Haddock is at a café terrace, with a view on the beach of San Theodoros
              on the top left of the panel.
              We see his back, he is turned slightly towards the right of the panel.
-             Haddock is half-standing instead of sitting, the round café table is wobbling in front of him,
+             Haddock is mostly standing instead of sitting,
+             the round café table is wobbling in front of him,
              and the glass of whisky on it is falling.
-             His laptop is now in the hands of the robber in a gray hoodie that hides his face,
+             His laptop is now no more on the table;
+             instead the laptop is in the hands of
+             the robber in a gray hoodie that hides his face,
              who stole it, and who is running away with it, away from Captain Haddock.
              The robber is on the right of the panel, heading away towards the top right of the panel.
              Captain Haddock, is cursing "Buccaneer!" and other censored curses.

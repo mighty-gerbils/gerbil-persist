@@ -6,7 +6,7 @@ So you move to a safer place, get a new laptop, and enter your passphrase in it;
 the system downloads encrypted backups from redundant datacenters on multiple
 other continents; after a few minutes, your interface is restored to the
 same state it was when you left it, and variable `x` is still bound to 42.
-Yet not one single instructions in any of your applications ever had
+Yet not one single instruction in any of your applications ever had
 to even mention anything about storage and retrieval.
 
 [This paper presents an original re-framing of Orthogonal Persistence,
@@ -173,8 +173,8 @@ all from within an atomic section.
 Note that evaluation after a memory barrier can actually continue
 optimistically after the memory barrier. However, the side-effects it produces
 will not be observable by users unless and until after the changes are committed;
-the output side-effects will be queued, and the input side-effects may block
-execution until the memory barrier is passed and outputs dequeued.
+the output side-effects will be queued, and
+the input side-effects may block execution, until the memory barrier is passed.
 The optimistic evaluation after a memory barrier may also not acquire locks
 on resources still available before the memory barrier, only on new resources
 created in the same optimistic “generation”.
@@ -237,8 +237,11 @@ Indeed, due to transient failures and restarts, a given action may be taken
 many times after its triggering condition was committed, yet before
 a sufficient reaction was acknowledged. Thus, it should be possible
 to take these actions many times with no adverse effect.
-Meanwhile, messages sent to a transient process need be neither idempotent
-nor wait for a memory barrier; however, the entire interaction with a transient
+Meanwhile, messages sent to a transient process
+(one that loses its state when an adversarial event happens such as
+a shut down of the system, power failure, etc.)
+need be neither idempotent nor wait for a memory barrier;
+however, the entire interaction with a transient
 process must be reconstitutable from scratch at any point, since
 the transient process may go at any time and have to be replaced
 by a new one with empty state.
@@ -287,7 +290,7 @@ and how to address them in a the most adequate way.
 
 Whether in the paradigm of Orthogonal Persistence or Manual Persistence,
 the underlying resources are ultimately the same, and finite.
-And eventually, they tarry.
+And eventually, they run out.
 
 Now, inasmuch as Orthogonal Persistence is managed automatically,
 without direct understanding of the human user’s ultimate intent,
@@ -344,7 +347,7 @@ made to follow the new invariants and variants,
 continuing the operations as if nothing had changed,
 or at least, not for the worse, only for the better.
 
-Certainly there are cases when the Right Thing to do is indeed
+Certainly there are cases when the Right Thing™ to do is indeed
 to erase some obsolete data, and stop some stale processes;
 but then that same cleanup could have been done at any point,
 even without a schema upgrade, and independently from any other upgrade.
@@ -420,7 +423,7 @@ is somewhat analogous to automatic memory management
 (with a garbage collector and/or declared ownership types)
 vs manual memory management (with malloc and free).
 
-In the prevalent paradigms of manual labor,
+In the prevalent paradigm of Manual Persistence,
 one crucial aspect of software is managed through
 a lot of expensive and error-prone human labor.
 Humans must repetitively reproduce low-level usage patterns everywhere locally,
@@ -438,7 +441,7 @@ that is correct by construction.
 The algorithm is applied relentlessly by a computer that never gets bored
 nor distracted, and will always enforce the global constraints
 that it never misses of confuses even in the subtlest of edge cases.
-Things Just Work for developers and users alike.
+Things Just Work™ for developers and users alike.
 What few bugs may exist in the algorithm are not application-specific,
 thus appear everywhere, can be detected early by anyone, fixed for everyone.
 
@@ -464,9 +467,11 @@ it interacts with that rest of the software.
 
 Orthogonal Persistence has atomic sections, memory barriers and
 persistent processes, that are modular:
-they say “don't cut the computation here” which only depends on local knowledge and weak synchronization.
+they say “don't cut the computation here”
+which only depends on local knowledge and weak synchronization.
 Manual Persistence has transactions, commits and sagas, that aren’t:
-they say “cut the computation exactly here” which requires global knowledge and strong synchronization.
+they say “cut the computation exactly here”
+which requires global knowledge and strong synchronization.
 
   - Atomic sections are modular, because you can call code or be called by code
     in a different module without even having to know whether or not
@@ -519,7 +524,7 @@ Manual Persistence is unmodular for the very same reasons, in reverse:
   - Transactions are not modular because every function needs to know whether
     it’s already in a transaction or not, to be conscious of what global entry
     point in a completely different module owns the transaction.
-  - Transactions are like always being in an giant atomic section that involves
+  - Transactions are like always being in a giant atomic section that involves
     modules you don’t know about, handling data you don’t own yet must somehow
     respect, while those modules must also magically respect data they know
     nothing about from other modules.
@@ -550,7 +555,7 @@ Manual Persistence is unmodular for the very same reasons, in reverse:
     database queues (expensive to emulate if not builtin) to commit events
     that some background daemon will dequeue and act upon in a follow-up
     transactions. But then you need to encode the entire context of the
-    follow-up in each event, which is tantamous to manually implementing
+    follow-up in each event, which is tantamount to manually implementing
     an ad-hoc version of process persistence, just for that follow-up.
   - Manual implementation of process persistence is not only tedious,
     but itself not modular, unless all modules are required to manually
@@ -779,7 +784,8 @@ But that means that mid- to long- range issues take the front stage:
     but will lose in performance compared to low-level languages,
     and in safety compared to static languages.
     At least you can gain metaprogramming in exchange as a super-power,
-    if you pick a Lisp instead of a blub language; yet most programmers fail to.
+    if you pick a Lisp instead of a [blub language](https://paulgraham.com/avg.html);
+    yet most programmers fail to.
 
   - Partial code edits may corrupt the entire database by introducing
     broken inconsistent intermediate steps.
@@ -796,7 +802,8 @@ But that means that mid- to long- range issues take the front stage:
     This calls for some kind of capability-based architecture, to contain the powers
     that would otherwise allow bad code to corrupt the entire system.
 
-  - Forms of PCLSRing with respect to *user* invariants (not just “system” invariants)
+  - Forms of [PCLSRing](http://fare.tunes.org/tmp/emergent/pclsr.htm)
+    with respect to *user* invariants (not just “system” invariants)
     are necessary to cleanly kill processes, but also to stop, inspect, migrate, upgrade them.
     This requires both system support, compiler support for every language, and language support
     to enable users to define those invariants in the interaction “language” (formal or informal)
@@ -829,10 +836,11 @@ rather than eliminates it.
 
 ## Bibliography
 
-My [LambdaConf 2016 talk](https://www.youtube.com/watch?v=KsswTN2cCSc&t=250s)
-discusses Orthogonal Persistence, based on chapters 2 to 5
-of my blog [“Houyhnhnm Computing”](https://ngnghm.github.io)
+My talks at [LambdaConf 2016](https://youtu.be/KsswTN2cCSc?t=250s)
+and [LambdaConf 2025](https://youtu.be/stEl-RBJVdA) discuss Orthogonal Persistence.
+The former is based on chapters 2 to 5 of my blog [“Houyhnhnm Computing”](https://ngnghm.github.io)
 (pronounced “Hunam Computing”).
+See also my old article on [Orthogonal Persistence on the TUNES Wiki](http://tunes.org/wiki/orthogonal_20persistence.html)
 
 [A Persistent System In Real Use: Experiences Of The First 13 Years](https://os.itec.kit.edu/65_2525.php), by Jochen Liedtke, IWOOS 1993. Even the processes are Persistent. See the
 [Website](https://6xq.net/eumel/),
@@ -854,7 +862,8 @@ Operating Systems that persist processes, such as
 [Mungi](http://tunes.org/wiki/mungi.html),
 [Charm](https://archiveos.org/charm/),
 [BRiX](https://archiveos.org/brix/),
-[Argon](https://archiveos.org/argon/)...
+[Argon](https://archiveos.org/argon/),
+[Phantom OS](http://phantomos.org/)...
 
 The Scottish School of Orthogonal Persistence, including systems such as
 [PS-Algol](https://en.wikipedia.org/wiki/PS-algol),
@@ -883,6 +892,9 @@ in the same vein, [Temporal.io](https://temporal.io/),
 they all rely on logging transaction, once in a while dumping a snapshot,
 and restoring state by replaying transactions from the snapshot.
 
+Counterpoint:
+[Orthogonal Persistence as an Anti-Pattern](https://cedanet.com.au/antipatterns/orthogonal-persistence.php)
+
 The Workshop on Persistent Object Systems,
 The Workshop on Database Programming Languages,
 old VLDB conferences around 2000,
@@ -903,7 +915,7 @@ do or don’t handle persistence.
 In today’s world (2024), all your data persists… on your enemies’ servers.
 The big corporations and bureaucracies that try to manipulate you
 know everything about you, and run AIs to analyze your behavior
-to manipulate you even more into buying their stuff and obeying their orders.
+so as to manipulate you even more into buying their stuff and obeying their orders.
 Modern “apps”, that don’t have or need a “save” button anymore,
 may superficially look to end-users as if they had Orthogonal Persistence,
 but underneath everything uses Manual Persistence;
