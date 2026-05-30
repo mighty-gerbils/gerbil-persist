@@ -45,7 +45,7 @@ Although most issues with Manual Persistence disappear with
 Orthogonal Persistence, some issues remain, though in a simplified way,
 reframed upside down into not having been Persistence issues after all,
 so much as essential logical issues that had been previously drowned
-among the cumbersome details of manual persistence:
+among the tedious minutiae of manual persistence:
 *persistence domains*, *atomicity*, *synchronization*,
 *publishing*, *resource exhaustion* and *schema upgrade*.
 
@@ -115,7 +115,7 @@ of order, or with some mixups in the details, or data corruption, or with
 the entire system in an unrecoverable state, etc.
 
 In the paradigm of Orthogonal Persistence, atomicity is managed with explicit
-_atomic sections_ (a.k.a. critical sections):
+_atomic sections_:
 code that produces intermediate states that should not be
 persisted is wrapped in such sections, quite similar to
 code sections that have disabled signals or interrupts,
@@ -155,6 +155,15 @@ In some cases, atomic changes across multiple persistence domains
 can be achieved, but they require that the domains be under common management,
 or at least to agree on some costly consensus protocol such as two-phase commit
 (see section [Composing Persistence Domains](#composing-persistence-domains)).
+
+Even within a persistence domain, there may be several different notions
+of atomicity, corresponding to several notions of persistence,
+against increasingly elaborate threat models:
+some operations must be atomic with respect to persistence to local disk;
+some must be atomic with respect to persistence to at least one complete remote backup;
+some must be atomic with respect to persistence to a wider quorum of remote backups.
+The stronger the guarantees within the persistence domain,
+the costlier the atomicity primitive.
 
 ### Synchronization
 
@@ -245,6 +254,14 @@ however, the entire interaction with a transient
 process must be reconstitutable from scratch at any point, since
 the transient process may go at any time and have to be replaced
 by a new one with empty state.
+
+As a persistence domain may have many different notions of atomicity of increasing strength,
+and persistence across domains is even stronger, they lead to synchronization primitives
+of accordingly increasing latency:
+you will have to wait longer for consensus across domains than for consensus within a domain,
+than for one remote backup without consensus, than for local backup, than for consensus
+between the CPUs of your local computer, than for execution on one CPU without consensus.
+
 
 ### Publishing
 
@@ -399,7 +416,8 @@ Instead, users should be able to use whichever data model and concurrency models
 fit their application, as specified in their regular programming language.
 If “tables everywhere” were really the paradigm in which
 it is most natural to think about a problem, programmers for this problem
-would naturally want to use a table-oriented language, such as APL.
+would naturally want to use a table-oriented language, such as APL
+(even then, still not a *relational* table-oriented language).
 More likely, some of the data would be in tables, and other data would be
 in different data structures, indexed differently, just as in most programs in most languages.
 Whichever way, note that the appropriate language can *never* be SQL,
@@ -572,8 +590,8 @@ Manual Persistence is unmodular for the very same reasons, in reverse:
     Either way, this requires a lot of advanced system administration and is
     extremely unmodular.
 
-All in all, Manual Persistence makes transactional applications a nightmare
-to design and maintain, and require a lot of coordination between developers
+All in all, Manual Persistence makes any but the simplest transactional applications
+a nightmare to design and maintain, and require a lot of coordination between developers
 of notionally independent modules, database administrators, network
 administrators, and a host of expensive infrastructure professionals.
 
@@ -716,7 +734,7 @@ applications that transact with remote servers.
 These will be local, modular, modifications, but modifications still.
 In particular, you will have to use the atomic section and memory barrier
 APIs to ensure your program correctly persists its effects
-when communicating with remote services.
+when communicating with external services.
 Also, when a persistent process wakes up after a pause, interrupt, failure,
 etc., it will reactivate all potential interrupted activitities, re-send
 all messages marked for sending that haven’t timed out yet,

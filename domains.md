@@ -11,6 +11,10 @@ domain by its controlling meta-object and transparently inherits all of its poli
 
 ---
 
+NB: A large part of this document is slop produced by Claude under my supervision.
+https://claude.ai/share/867e1873-f77b-4905-ae0f-af87930a7f20
+
+
 ## 1. Security and Isolation
 
 Every application is bound to an execution domain by its controlling meta-object, and
@@ -614,6 +618,14 @@ Tiered compaction is the default — appropriate for write-mostly workloads wher
 reads occur primarily on crash recovery or migration. Compaction runs as a background
 process using idle write budget, spreading GC work across normal commits without
 generating extra requests to backends.
+
+A few potential optimizations related to compaction:
+  - Since PUTs are expensive on S3, you can save money by merging lots of old changesets
+    into a single one... which is conceptually the same as saving an image!
+  - Other slight optimization: if there is no memory barrier,
+    you can save a changeset now for immediate survival, then instead of forgetting it,
+    have the next changeset include its changes, and obsolete it, etc.,
+    until a memory barrier is hit and then you really must persist remotely.
 
 ---
 
