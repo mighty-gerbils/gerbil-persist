@@ -56,7 +56,7 @@ This document is available under the bugroff license.
        @p{@small{@(~)}}
        @C[style: "font-size: 66%"]{
            François-René Rideau @(email "<fare@mukn.com>")}
-       @C{@small{@Url{http://github.com/mighty-gerbils/gerbil-persist}}}
+       @C{@small{@Url{http://git.cons.io/mighty-gerbils/gerbil-persist}}}
        @div[style: "font-size: 50%;" (~)]
        @C{@small{LambdaConf 2025-05-12}}
        @div[style: "font-size: 50%;" (~)]
@@ -372,7 +372,7 @@ This document is available under the bugroff license.
         @L{Defenders: Better Control on Smaller Attack Surfaces})
      ($slide "Orthogonal Persistence’s Time Has Come!"
         @L{Whoever makes it usable first will redefine the industry}
-        @L{Model: @Url{https://github.com/mighty-gerbils/gerbil-persist}}
+        @L{Model: @Url{https://git.cons.io/mighty-gerbils/gerbil-persist}}
         @L{X: @Url{https://x.com/ngnghm} @br Blog: @Url{https://ngnghm.github.io}}
         @C{Opportunities: @code{<fare@"@"mukn.com>}})))) ;; Investment & Partnership Opportunities, soon I hope job opportunities
 
