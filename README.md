@@ -449,3 +449,4 @@ In particular we are (1) abstracting away the underlying key-value store, and
 - [PostgREST](https://docs.postgrest.org/en/v12/), REST app server in pgsql
 - [Modern Databases](https://x.com/thegeeknarrator/status/1938978935930241400)
 - [NULLs](https://x.com/FranckPachot/status/1938692925610774622)
+- [BtrLog: Low-Latency Logging for Cloud Database Systems](https://arxiv.org/abs/2606.27051)

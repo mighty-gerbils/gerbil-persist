@@ -15,6 +15,12 @@ See our presentation at LambdaConf 2025:
 [video](https://youtu.be/stEl-RBJVdA) and
 [slides](http://fare.tunes.org/files/cs/persist/slides-2025-lambdaconf.html).]
 
+<p align="center">
+  <img src="pics/haddock-comic.webp"
+       alt="Captain Haddock creates his data on his laptop. His laptop is stolen. His data center gets bombed. He flies back home. He gets a new laptop; all he needs are his credentials. His latest data is restored on the new laptop."
+       style="display:block; max-width:66%; max-height:66vh; width:auto; height:auto; margin:0 auto">
+</p>
+
 ## Orthogonal Persistence: Computations that Matter on Data that Matters
 
 «Designing a programming language without data persistence means
