@@ -814,6 +814,8 @@ in one persistence domain, with more dynamic and less curated yet still persiste
 in a separate persistence domain (though possibly on the same server, so you can still
 share transactions and not need an extra 2-Phase-Commit protocol).
 
+See my document on [Storage Domains](domains.md).
+
 ## Long Range Issues with Persistence
 
 Orthogonal Persistence completely solves “short range” persistence issues:
