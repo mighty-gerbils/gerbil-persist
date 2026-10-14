@@ -1,19 +1,20 @@
 # Orthogonal Persistence, The Model
+*François-René Rideau*, March 2024 (last revised October 2026)
 
-_Orthogonal Persistence_: You bind variable `x` to 42 at your REPL, but then
+This paper presents an original re-framing of Orthogonal Persistence,
+as refactored into a simple set of concepts.
+See my presentation at LambdaConf 2025:
+[video](https://youtu.be/stEl-RBJVdA) and
+[slides](http://fare.tunes.org/files/cs/persist/slides-2025-lambdaconf.html).
+
+_Orthogonal Persistence_: You bind variable `foo` to 42 at your REPL, but then
 some “youths” steal your laptop while orcs raze your datacenter to the ground.
 So you move to a safer place, get a new laptop, and enter your passphrase in it;
 the system downloads encrypted backups from redundant datacenters on multiple
 other continents; after a few minutes, your interface is restored to the
-same state it was when you left it, and variable `x` is still bound to 42.
+same state it was when you left it, and variable `foo` is still bound to 42.
 Yet not one single instruction in any of your applications ever had
 to even mention anything about storage and retrieval.
-
-[This paper presents an original re-framing of Orthogonal Persistence,
-as refactored into a simple set of concepts in March 2024.
-See our presentation at LambdaConf 2025:
-[video](https://youtu.be/stEl-RBJVdA) and
-[slides](http://fare.tunes.org/files/cs/persist/slides-2025-lambdaconf.html).]
 
 <p align="center">
   <img src="pics/haddock-comic.webp"
@@ -26,7 +27,7 @@ See our presentation at LambdaConf 2025:
 «Designing a programming language without data persistence means
 “I only care about toy computations for people whose data doesn't matter.”
 Designing a database without a good programming language means
-“I only care about toy data not part of any computation that matters.”»
+“I only care about toy data not part of any computation that matters.”» — Faré (that's me)
 
 ### Persistence by Default
 
@@ -138,7 +139,7 @@ code containing atomic sections, and you do not usually need even be aware
 of whether or not the code components you compose contain
 one or more atomic sections, or none at all.
 
-Based on disk latency, we may target say a millisecond as duration
+Based on disk latency, you may target say a millisecond as duration
 before which to commit the current transaction.
 When the timer is reached, the transaction is delayed
 until all current atomic sections are completed;
@@ -519,7 +520,8 @@ Modularity is the ability to think about software in small chunks, locally,
 each independently from the rest of the software,
 except for a number of small delimited interfaces through which
 it interacts with that rest of the software.
-(Some Functional Programmers call that Compositionality; same difference.)
+Some Functional Programmers call that Compositionality; same difference.
+The slogan that defines modularity: **more cooperation, less coordination**.
 
 Orthogonal Persistence has atomic sections, memory barriers and
 persistent processes, that are modular:
@@ -789,7 +791,7 @@ for messages received since the last one committed.
 Manually writing code to coherently persist data across several devices,
 filesystems, databases, storage services, is extremely hard, and
 will be fragile with respect to any change in the configuration.
-It will require cooperation from every module that manually persists any data,
+It will require coordination with every module that manually persists any data,
 as well as special code to handle the outermost places that start and commit
 transactions. This is undoable in practice.
 At best, Manual Persistence will use some database service that is
@@ -937,8 +939,8 @@ does *not* mention persistence of continuations, stacks, execution contexts, pro
 Execution persistence is explicitly documented for Napier88 and STAPLE;
 I have not yet established whether PS-algol or Ten15 supported it.
 The same article also claims that PS-Algol was the first language to provide orthogonal persistence,
-and fails to cite or credit Eumel whose language ELAN seems to have been even earlier,
-which did persist processes.
+and fails to cite or credit Eumel whose language ELAN seems to have existed even earlier,
+and did persist processes.
 
 [Acton](https://www.acton-lang.org/),
 a “fault tolerant distributed programming platform for building mission critical systems”
