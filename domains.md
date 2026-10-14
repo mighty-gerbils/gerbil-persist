@@ -11,7 +11,8 @@ domain by its controlling meta-object and transparently inherits all of its poli
 
 ---
 
-NB: A large part of this document is slop produced by Claude under my supervision.
+NB: This document is an incomplete draft WIP.
+A large part of it was slop produced by Claude under my supervision.
 https://claude.ai/share/867e1873-f77b-4905-ae0f-af87930a7f20
 
 
@@ -104,7 +105,7 @@ a hacker who breached the provider's infrastructure.
 They see only an append-only sequence of encrypted, padded, authenticated changeset blobs.
 They cannot observe individual object sizes, access patterns, schema structure, or logical content.
 They can possibly modify the data, but they cannot break encryption or authentication,
-thus any tampering of the data or meta-data will be evident.
+so any tampering of the data or meta-data will be evident.
 They can observe the volume and timing of writes (how many blobs, how often),
 which can be obscured further with the `noise` option.
 
@@ -169,7 +170,7 @@ use the same logical table names, even in cleartext configurations.
 
 NB: on some backends, domain state may be stored as meta-data of the configuration object?
 (NB: Don't forget authentication on that meta-data, too, with:
-`nonce||E(M,data)||H(M||backend||max-changeset||nonce||E(M,data))` or such)
+`nonce||E(M,data)||H(M||backend||max-changeset||nonce||E(M,data))` or such AEAD scheme)
 Or if atomic metadata is not available, a configuration object may contain
 two numbered configurations, and the status then tells us which number is active?
 
@@ -178,7 +179,7 @@ two numbered configurations, and the status then tells us which number is active
 A key's fingerprint is a public identifier that uniquely identifies the key without revealing it,
 typically `(sha256 key)` or some other such hash. Hardware and software key stores advertise their
 keys' fingerprints directly, enabling vault lookup by fingerprint.
-A software vault may keep also keep derivation records of how to have a hardware key store
+A software vault may also keep derivation records of how to have a hardware key store
 (TPM, HSM, Yubikey) re-derive a key from its seed by a series of HMACs:
 ```
 (hmac (hmac (tpm-key "deadbeef...") "level-1") "level-2")
@@ -207,10 +208,10 @@ The operator must remember or store:
 You definitely need to remember or somehow safely backup the 24-word or so BIP39 seed
 from which to recover the key and all the data that follows from it, and
 any HMAC path you used to name the domain.
-On the other, you don’t have to memorize the `backend-uri`,
+On the other hand, you don’t have to memorize the `backend-uri`,
 since it can be retrieved from your storage provider's console:
 they bill you, they better let you access the data you pay for.
-Of course, it's much easier if you write all down all the information,
+Of course, it's much easier if you write down all the information,
 send yourself an email with the entire storage configuration,
 or save it in a local file with a remote backup, etc.
 Nevertheless the seed is the irreplaceable piece you must keep safe —
@@ -236,6 +237,8 @@ derived address:
   (Record
     sequence:        SequenceNo         ; fencing token — covers entire database
     metadata:        (Maybe ChangesetLocation) ; hint to find other metadata, if using LSM strategy.
+
+    ;; TODO: missing config-location, peer-backends
 
     ;; executor lease
     executor:        (Maybe ExecutorID)
@@ -272,8 +275,10 @@ list during configuration upgrades.
 
 ### The Configuration Blob
 
-The configuration is at a fixed location, `domain-configuration-location`.
-If migrating to a new configuration, it might be a `MigratingConfiguration` instead.
+The configuration is at a fixed location, `domain-configuration-location`,
+a mutable pointer to an immutable record.
+If migrating to a new configuration, the record might be a `MigratingDomainConfiguration`
+instead of a `DomainConfiguration`.
 A configuration contains all storage and execution policies:
 
 ```scheme
@@ -325,10 +330,10 @@ authoritative configuration:
 
       b. If the backend is accessible, has valid state, and is marked as active,
          grab its executor lock (OK to remove lock from dead former self, not from others).
-         If could not become the executor, abort the entire thing,
+         If it could not become the executor, abort the entire thing,
          attempt to release all executor locks grabbed so far,
          wait with exponential backoff to avoid further collision.
-         If could become the executor, read the state again again to be sure.
+         If it could become the executor, read the state again again to be sure.
 
       c. If accessible and valid (active or not, but executor if active):
          Remember the latest sequence number reached,
@@ -340,8 +345,12 @@ authoritative configuration:
          (retired, or not yet active due to incomplete migration),
          mark with appropriate failure.
 
-4.  Identify those active backends with the highest valid sequence number (if any active left),
-    adopt their state and configuration (error if disagreement).
+4.  Validate configuration transitions under the authority of their predecessor
+    configurations. A higher sequence number or valid authentication alone
+    does not establish that a proposed configuration was committed.
+    Identify those active backends (if any active left)
+    with the highest valid sequence number that was committed,
+    and adopt their state and configuration (error if disagreement).
       → now you have the latest domain configuration (no consensual state yet, though)
 
 5.  Contact quorum of backends in the domain configuration to identify latest consensual state.
@@ -384,8 +393,23 @@ A new changeset is open and made current (or will be next time a write is made).
 A thread keeps executing optimistically: all writes from a thread are locally
 visible immediately by all other threads, even though they are not yet committed.
 
-All changes are definitive and irreversible.
-There is no speculative execution, no “rollback”, unless it is done by hand the hard way.
+All changes are definitive and irreversible—except by crash.
+After a crash, changes beyond the recovered durable state may still be lost,
+while some computations that were pending in the committed state may be re-executed.
+
+The system offers no support for speculative execution:
+there are no speculative “transactions”,
+hence no “conflict” between such non-existent speculative transactions,
+no “rollback” of non-existent speculative transaction, etc.
+Undoing a change is a regular explicit application action—another change.
+It is the user's responsibility to avoid conflicts with explicit locking, queueing, etc.
+The user may of course implement his own speculative transaction layer on top if he so desires.
+I strongly suspect that amazingly few users will implement speculation,
+and that while someone will inevitably write a speculation layer library at some point,
+almost no one will use it: the vast majority of applications are much easier
+to write, to maintain and to make efficient with simple locking mechanisms.
+In any case, whoever writes the speculation layer won't have to deal with persistence,
+since persistence is guaranteed by the system.
 
 ### Critical Sections
 
@@ -412,7 +436,7 @@ a confirmation to a user, or an item return safely recorded before to send a ref
 It then inserts a memory barrier between the recording of the critical event,
 and the execution of a response to it.
 
-When a thread hits a memory barrier (execute the corresponding instrutions),
+When a thread hits a memory barrier (executes the corresponding instructions),
 the memory barrier stops the thread execution until the current changeset
 has been closed then successfully committed to the database
 (i.e. accepted by a quorum of the backends).
@@ -452,8 +476,10 @@ Re-execution must be deterministic from the logged changesets.
 
 ## 5. Configuration and Data Upgrade Protocol
 
-Configuration and data upgrades are always coupled. All upgrade state is tracked in
-the domain state cell. The protocol is crash-safe at each phase boundary.
+Configuration and data upgrades are always coupled.
+All upgrade state is tracked in the domain state cell.
+The intended guarantee is crash safety at each phase boundary;
+the authority and recovery rules below remain to be verified.
 
 ### Phases
 
@@ -503,7 +529,7 @@ TODO: Verify that the algorithm is safe.
 
 When something bad happens to a backend, or it falls behind in accepted changesets,
 it is added to the failure list, its status is changed to "under repair",
-and the repair process happens as in step 3 or paragraph 5 above.
+and the repair process happens as in step 3 of §5 above.
 When the backend catches up, it changes its status to active again.
 
 Backend failure detection and repair are executor concerns — they do not require a
@@ -557,6 +583,11 @@ class to handle its specific behavior and capability profile.
 Writes always go to all backends regardless of threshold. The threshold governs read
 availability only. Quorums nest freely for RAID-of-RAID structures.
 
+This threshold specifies data reconstruction, not commitment or executor ownership.
+Separate rules determine which durable acknowledgements establish commitment,
+which backends must be consulted during recovery, and
+how a new executor excludes previous executors.
+
 ### Backed Storage
 
 Combines a front storage, typically local, for actual reads and writes, and a
@@ -590,19 +621,24 @@ Two domain-level parameters bound changeset size:
 
 ```scheme
 changeset-padding:  n    ; pad each closed changeset to the next multiple of n bytes
-                         ; hides exact write volume; default 4096
+                         ; hides exact write volume; default 32768
 changeset-max-size: n    ; hard upper bound on changeset size; default 2097152 (2MB)
                          ; changeset is closed and flushed when this is reached
-                         ; regardless of execution domain flush policy
+                         ; regardless of execution domain flush policy.
+                         ; Oversized atomic operations require an explicit policy:
+                         ; reserved capacity, safe failure, or multiple physical blobs
+                         ; published atomically as one logical changeset
 ```
 
 Between these bounds, when a changeset is closed is an execution domain concern.
 
 ### Compaction
 
-Old changesets accumulate dead objects — objects whose values have been superseded
-by later writes. Compaction recycles old changesets by copying their surviving
-objects into fresh changesets and deleting the originals.
+Old changesets accumulate obsolete object versions that are no longer needed
+by current state, retained snapshots or supported recovery paths.
+Compaction copies surviving versions into fresh changesets.
+The replacements and updated recovery metadata must satisfy the required
+durability policy before the originals can be deleted.
 
 The compaction policy is a domain-level parameter:
 
@@ -787,3 +823,9 @@ producing a new `Configuration` blob at a new changeset location.
                   (ipfs-backend "https://ipfs.infura.io/sub/")))
     schema: my-schema))
 ```
+
+### Further Notes
+
+During recovery, all the data is read, which among other things prevents revealing
+data patterns from access timing. A manifest that includes size information is part
+of the authenticated metadata, so a malicious store cannot feed you infinite garbage.

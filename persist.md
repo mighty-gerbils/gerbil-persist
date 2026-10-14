@@ -1,5 +1,5 @@
 # Orthogonal Persistence, The Model
-*François-René Rideau*, March 2024 (last revised October 2026)
+*François-René Rideau*, March 2024 (last modified October 2026)
 
 This paper presents an original re-framing of Orthogonal Persistence,
 as refactored into a simple set of concepts.
@@ -31,7 +31,7 @@ Designing a database without a good programming language means
 
 ### Persistence by Default
 
-Orthogonal Persistence (of Processes, or however named activities),
+Orthogonal Persistence (of processes, or activities, however named),
 or “Durable Execution” as the name has been popularized
 by Microsoft then by the Temporal or Golem teams,
 is when ongoing processes persist (at least by default),
@@ -39,7 +39,7 @@ such that if interrupted for any reason (memory exhaustion,
 hardware fault, power interruption, machine destroyed or stolen, etc.),
 they will automatically restart from last committed state.
 
-Orthogonal Persistence is to be opposed to the prevalent paradigm of
+Orthogonal Persistence is to be contrasted with the prevalent paradigm of
 Manual Persistence, wherein all data is transient by default, and
 developers have to explicitly write data to one or several
 disk files when they desire persistence,
@@ -55,7 +55,7 @@ reframed upside down into not having been Persistence issues after all,
 so much as essential logical issues that had been previously drowned
 among the tedious minutiae of manual persistence:
 *persistence domains*, *atomicity*, *synchronization*,
-*publishing*, *resource exhaustion* and *schema upgrade*.
+*publishing*, *resource exhaustion*, *schema upgrade* and *model independence*.
 
 ### Persistence Domains
 
@@ -75,7 +75,7 @@ Persistence Domains as logical entities having a persistent identity,
 and how they are dynamically mapped down to various underlying substrates.
 This means a persistence domain can survive indefinitely
 through simple occasional reconfiguration, even though the
-underlying substrates necessarily have short finite shelf life
+underlying substrates necessarily have a short, finite lifespan
 of a few years at most each, which necessarily causes catastrophic
 transitions in the Manual Persistence paradigm.
 
@@ -110,7 +110,7 @@ observe accounts in a state where one was credited and the other not
 debited (yet), or the other way around.
 
 With respect to Persistence, the speculative aspect is about whether or not
-some computation was persisted or not. If it was persisted, then it is
+some computation was persisted. If it was persisted, then it is
 guaranteed to have taken place even in the case of the system crashing and
 restarting; if it wasn’t, then it is possible for the system to forget it.
 The crash may be fortuitous and unexpected (sudden power loss, theft of device),
@@ -135,18 +135,18 @@ But there is otherwise no problem with nesting atomic sections:
 persistence remains disabled while executing within an atomic section,
 and is only reenabled when all nested atomic sections have been exited.
 Code that contains atomic sections can be freely composed with other
-code containing atomic sections, and you do not usually need even be aware
+code containing atomic sections, and you usually need not even be aware
 of whether or not the code components you compose contain
 one or more atomic sections, or none at all.
 
-Based on disk latency, you may target say a millisecond as duration
-before which to commit the current transaction.
-When the timer is reached, the transaction is delayed
+Based on disk latency, you may target, say,
+a millisecond as the interval between commits.
+When the timer is reached, the commit is delayed
 until all current atomic sections are completed;
 and (possibly after a grace period) new outermost atomic sections are blocked
 from even being started, until after the transaction is committed
 (entering a nested atomic section from an existing one
-is not considered a new atomic section).
+is not considered a new outermost atomic section).
 
 Atomic sections can be contrasted with transactions,
 the way that atomicity is managed in manual persistence paradigm.
@@ -197,13 +197,13 @@ Optionally, it may be combined with thread-spawning to register
 a callback function to be called after the current transaction commits,
 all from within an atomic section.
 
-Note that evaluation after a memory barrier can actually continue
-optimistically after the memory barrier. However, the side-effects it produces
-will not be observable by users unless and until after the changes are committed;
+Note that evaluation can actually continue optimistically after a memory barrier.
+However, the side-effects it produces will not be observable by users
+unless and until after the changes are committed;
 the output side-effects will be queued, and
 the input side-effects may block execution, until the memory barrier is passed.
-The optimistic evaluation after a memory barrier may also not acquire locks
-on resources still available before the memory barrier, only on new resources
+The optimistic evaluation after a memory barrier must not acquire locks
+on resources that existed before the memory barrier, only on new resources
 created in the same optimistic “generation”.
 
 By contrast, with manual persistence, synchronization requires
@@ -254,10 +254,14 @@ so a failure after commitment cannot cause the deferred work to be forgotten.
 
 Note how multiple processes or threads within the same persistence domain
 can interact in synchronous ways, with a shared underlying transaction
-and memory barriers, always going forward, never having to rollback,
-without any consistency problem. This is totally unlike the database
-transaction model, where processes can never know that they are not going
-to interfere with each other, with all but one having to be rolled back.
+and memory barriers, always going forward, without any consistency problem:
+**In case of crash, all activities within the domain are consistently rolled back
+together to the last commit.**
+Up to one commit interval of work is lost, and any externally visible effect
+must have been gated by a barrier.
+This is totally unlike the database transaction model, where
+processes can never know that they are not going to interfere with each other,
+with all but one having to be rolled back.
 A lot of the needless complexity of database servers can be eschewed.
 Usual mutexes and all the regular programming techniques of real
 programming languages that people actually use and understand can be used
@@ -266,8 +270,8 @@ any of the mechanisms that databases provide at the wrong place.
 
 On the other hand, processes in distinct persistence domains must
 communicate via asynchronous messages and abstractions built atop such.
-Moreover, every asynchronous message sent to a persistent process must
-(1) be idempotent, and (2) can only be sent after a memory barrier.
+Moreover, every asynchronous message sent to another persistent process must
+(1) be idempotent, and (2) be sent only after a memory barrier.
 Indeed, due to transient failures and restarts, a given action may be taken
 many times after its triggering condition was committed, yet before
 a sufficient reaction was acknowledged. Thus, it should be possible
@@ -275,7 +279,7 @@ to take these actions many times with no adverse effect.
 Meanwhile, messages sent to a transient process
 (one that loses its state when an adversarial event happens such as
 a shut down of the system, power failure, etc.)
-need be neither idempotent nor wait for a memory barrier,
+need neither be idempotent nor wait for a memory barrier,
 as long as they do not generate persistent effects.
 However, the entire interaction with a transient
 process must be reconstitutable from scratch at any point, since
@@ -290,8 +294,8 @@ not see uncommitted speculative states, or should be updated appropriately
 when that state is either committed or rolled back.
 
 As a persistence domain may have many different notions of atomicity of increasing strength,
-and persistence across domains is even stronger, they lead to synchronization primitives
-of accordingly increasing latency:
+and persistence across domains is even stronger,
+there are as many variants of synchronization primitives with accordingly increasing latency:
 you will have to wait longer for consensus across domains than for consensus within a domain,
 than for one remote backup without consensus, than for local backup, than for consensus
 between the CPUs of your local computer, than for execution on one CPU without consensus.
@@ -311,17 +315,21 @@ _tagging_ a version of their data as suitable for sharing,
 and granting select others a capability to access the tagged version
 on a replica of their persistence domain.
 
-This is in contrast with the Manual Persistence paradigm, where publishing
-involves making a copy of a file or directory, or an archive of that directory
-(zip file, tarball, etc.). The many versions of these files are easily confused
-with each other, and their names and metadata often lack information, or
-carry incorrect metainformation that indicates the time of last copy rather than
-original publication. It is often hard to tell which copy came before or after
-which other, which was extracted from a branch with non-standard changes,
-which was already visited or is otherwise redundant, which is important to view,
-what are the changes, whether the copy has its data intact and complete,
-or what tampered with, corrupted or incomplete or garbled beyond the ability
-to restore any useful data, etc.
+This is in contrast with the Manual Persistence paradigm,
+where publishing involves making a copy of a file or directory,
+or an archive of that directory (zip file, tarball, etc.).
+The many versions of these files are easily confused with each other,
+and their names and metadata often lack information, or
+carry incorrect metainformation that indicates the time of last copy
+rather than original publication.
+It is often hard to tell which copy came before or after which other,
+which was extracted from a branch with non-standard changes,
+which was already visited or is otherwise redundant,
+which is important to view,
+what the changes are,
+whether the copy has its data intact and complete,
+or whether it was tampered with, corrupted, incomplete, or garbled
+beyond the ability to restore any useful data, etc.
 
 Thus, in Orthogonal Persistence you never have to *save* a file,
 yet you still once in a while have to *name* or *tag* a version,
@@ -372,14 +380,15 @@ without user supervision, so instead users configure which processes run
 in which division of what persistence domain, and assign
 limits, alerts, shared or private soft or hard reserves, and
 emergency plans to each domain:
-every process and every domain is monitored, its resource usage accounted,
+Every process and every domain is monitored, its resource usage accounted,
 so users or automated business agents
-can take proactive measures before they run out of bounds, and
-reactive measures after they do;
-processes are stopped when they run out of space, and
-can be resumed after space issues are solved;
-space is reserved so special debugging processes can run
-inside the scope of a stopped process, inspect and cleanup its data,
+can take proactive measures before resources run out, and
+reactive measures after they do.
+Processes are stopped when they run out of space, and
+can be resumed after space issues are solved
+(possibly after amending the code to plug leaks).
+Space is reserved so special debugging processes can run
+inside the scope of a stopped process, inspect and clean up its data,
 garbage collect unneeded elements, and resume the process—or
 simply extract the useful data, restart a new process and
 shutter the one that ran out of space.
@@ -403,14 +412,14 @@ Certainly there are cases when the Right Thing™ to do is indeed
 to erase some obsolete data, and stop some stale processes;
 but then that same cleanup could have been done at any point,
 even without a schema upgrade, and independently from any other upgrade.
-But in general, most existing data, should be preserved, especially so
+But in general, most existing data should be preserved, especially so
 if it concerns inventory, accounting, legal matters,
 incomplete orders, on-going operations, etc.—anything current
 about the human-meaningful activity being represented and operated.
 
 In the paradigm of Manual Persistence, any non-trivial Schema Upgrade is
 a catastrophic event, to be specially handled by some crack team,
-involving some ad hoc migration code, and often down time, voluntary or in-.
+involving some ad hoc migration code, and often downtime, voluntary or in-.
 To avoid such stress, developers often choose to restrict themselves to
 the “trivial” changes, only adding new tables and new fields initialized to NULL,
 wherein the complexity of the Schema only ever increases and edge cases accumulate,
@@ -431,18 +440,18 @@ a regular part of the programming language.
 ### Model Independence
 
 Note how Orthogonal Persistence is not tied to any particular data model,
-or, for that matter, from any particular model for a query language,
-or for speculative potentially-conflicting concurrent transactions:
+or, for that matter, to any particular query language,
+or to any model of speculative potentially-conflicting concurrent transactions:
 You can use flat tables in the style of SQL or Datalog if you like,
 or a simple key-value store, a statically or dynamically typed object graph,
 and even a raw untyped memory space, or a mix of the above,
 or anything you like whatsoever, as fits whatever programming language you prefer to use.
 Persistence is Orthogonal to the Data Model, and the Data Model is Orthogonal to Persistence.
 
-It is quite an inefficient market that resulted in the ACID properties of Persistence
+It is quite an inefficient market that resulted in the ACID properties of databases
 being sold in a package-deal with an absurd data model, the Relational Data Model,
-that fits very few actual use cases;
-What more, it uses a horribly misdesigned query language (SQL),
+that fits very few actual use cases.
+What's more, it uses a horribly misdesigned query language (SQL),
 and there is no decent modification language, much less any attempt to standardize one;
 instead, databases provide you with a dubious model for speculative transactions,
 that allows them to improve their benchmarks, but only make things more complex for users.
@@ -465,8 +474,9 @@ The pathetic languages that database vendors typically come up with,
 made by people who are definitely not programming language experts
 or even actual amateurs, never make the cut, either.
 (An amateur by definition loves what he’s doing;
-those who misdesign these languages obviously have no love for this part of their job,
-since they’re not even trying to do it right, or learn the very basics of language design.)
+anyone who thus misdesigned these languages has no love for this part of their job,
+since they’re not even trying to do it right,
+having obviously failed to learn even the very basics of language design.)
 On the other hand, an appropriate language can conceivably have SQL embedded in it as a subset,
 or hopefully something roughly equivalent to SQL but better designed,
 such as C# with its LINQ extension.
@@ -524,10 +534,10 @@ Some Functional Programmers call that Compositionality; same difference.
 The slogan that defines modularity: **more cooperation, less coordination**.
 
 Orthogonal Persistence has atomic sections, memory barriers and
-persistent processes, that are modular:
+persistent processes, which are modular:
 they say “don't cut the computation here”
 which only depends on local knowledge and weak synchronization.
-Manual Persistence has transactions, commits and sagas, that aren’t:
+Manual Persistence has transactions, commits and sagas, which aren’t:
 they say “cut the computation exactly here”
 which requires global knowledge and strong synchronization.
 
@@ -561,7 +571,8 @@ which requires global knowledge and strong synchronization.
     (eventual release) of mutexes. By contrast, mutual exclusion across
     transactions is impossible, because clients do not persist but lose
     execution context, and therefore mutexes are *guaranteed* to
-    eventually deadlock and leave the data they protect in a corrupted state.
+    eventually deadlock and/or get released while the data they protect
+    is left in a corrupted state as the context to restore invariants is gone.
   - Persistent processes are modular, because programmers can trust that
     every process will be robustly executed, its invariants preserved
     and its variants decreased, and thus need not be worried about any
@@ -575,6 +586,7 @@ which requires global knowledge and strong synchronization.
     the ecosystem is robust and already takes care of it for them.
 
 Manual Persistence is unmodular for the very same reasons, in reverse:
+
   - You cannot reason locally about transactions;
     you cannot compose smaller transactions into larger transactions
     or decompose larger ones into smaller ones;
@@ -592,7 +604,7 @@ Manual Persistence is unmodular for the very same reasons, in reverse:
     then builds a completely different model for persistence without computations,
     and try to make the two interact weakly, yet expect a robust result.
   - Some systems allow for “nested” transactions, but it’s really a lie because
-    your code has to work against the least of the warranties of whether you’re
+    your code has to work against the least of the guarantees of whether you’re
     already in a transaction or not and your code will be interrupted or not.
   - Nested transactions do not support the simplest and most important modular
     programming mechanism, having a function return a value, which cannot be
@@ -607,7 +619,7 @@ Manual Persistence is unmodular for the very same reasons, in reverse:
     generate more data contention as the transaction gets longer,
     with less reliability, and more latency for everyone.
     Attempts to divide these transactions in many “batches” require a lot
-    of engineering efforts to regain some performance without addressing
+    of engineering effort to regain some performance without addressing
     the fundamental problem. The entire speculative model wherein clients
     try and retry many times is unreliable, and yes, unmodular.
   - One safe but indirect way to schedule follow-up code execution is to use
@@ -632,7 +644,7 @@ Manual Persistence is unmodular for the very same reasons, in reverse:
     extremely unmodular.
 
 All in all, Manual Persistence makes any but the simplest transactional applications
-a nightmare to design and maintain, and require a lot of coordination between developers
+a nightmare to design and maintain, and requires a lot of coordination between developers
 of notionally independent modules, database administrators, network
 administrators, and a host of expensive infrastructure professionals.
 
@@ -650,13 +662,14 @@ The low-level primitive is an explicit lock object with which you manually
 do the above and carefully handle failure in the absence of exceptions.
 Either way, all your code is written in your usual programming language;
 most of the code is blissfully unaware of when locks are used;
-the few “critical sections” need be careful to respect a hierarchy of locks,
+the few “critical sections” need to be careful to respect a hierarchy of locks,
 but they are written in the same familiar language, and are pretty small.
 This primitive is thus modular: you can keep writing functions that don't have to care
 whether other functions ever use the primitive.
 The mutual exclusion mechanism is local and lightweight, efficient and scalable;
 it doesn’t force any global reorganization of your code,
-any specific data model, any specific control flow model.
+any specific data model, any specific control flow model
+(see [Modularity](#modularity) above).
 
 If concurrency had a “solution” for atomicity that behaves like transactions
 “solve” atomicity for databases, it would look like this:
@@ -667,16 +680,18 @@ That’s an inversion of control;
 to be done manually in languages without `call/cc`.
 Moreover, control flow outside transactions is considered unreliable, such that
 any control flow state required to ensure application invariants must be
-explicitly reified within the transaction (see Persisting Execution Context below).
+explicitly reified within the transaction
+(see [Persisting Execution Context](#persisting-execution-context) below).
 To add insult to injury, the parts done while holding locks as well as
 all changes that matter must be written as magic snippets
 in a completely different language
 that you must manually metaprogram with strings.
 Furthermore, if you keep your transactions too small,
-you will incur a lot overhead and kill performance,
+you will incur a lot of overhead and kill performance,
 whereas long transactions will kill both concurrency and liveness.
 Finally, the data model for your transactions is completely different from
-the regular data model for your programming language.
+the regular data model for your programming language
+(see [Model Independence](#model-independence) above).
 That’s what transactions for concurrency would be, and what transactions for databases are.
 
 If this design sounds completely crazy, that’s because it is.
@@ -705,14 +720,14 @@ the shared data heap, the “file descriptors” or “handles”
 opened with the Operating System, the libraries loaded,
 any shared memory or resource held, any mutex at stake, etc.
 
-The *low-level* way to persist data is to use some Virtual Machine (VM) that
+The *low-level* way to persist processes is to use some Virtual Machine (VM) that
 will do it for you, such as [Golem](https://golem.cloud)’s WASM environment.
 The VM implementation knows where all your data is, and can make regular
 snapshots of the state of the virtual CPU and the associated memory,
 saving CPU registers and whichever memory pages have changed between two snapshots.
 You can only enjoy the hardware accelerations supported
 by the VM implementation, but there are a finite number of them,
-and worse comes to worst you could run the truly computation-intensive parts
+and if worse comes to worst, you could run the truly computation-intensive parts
 in a transient “coprocessor” process.
 In particular, making coherent snapshots when a process runs with multiple threads,
 possibly on multiple processors, can be especially tricky and costly,
@@ -727,20 +742,21 @@ they can happen by following low-level sets of changes to the VM’s memory,
 or by following deterministic VM reactions to high-level recorded input
 (which is an approach known as “Prevalence” when done manually).
 
-The *high-level* way to persist data is to write your programs in some language
+The *high-level* way to persist processes is to write your programs in some language
 that has a compiler that supports Orthogonal Persistence.
 The compiler will then make each piece of a program’s execution context into
 an explicit object that can be serialized and stored in an underlying database:
-Continuation-Passing Style will make stack frames into closures;
-various explicit monads will also turn the context of as many effects into closures;
-lambda-lifting, closure conversion and defunctionalization then turn closures into data;
+monadic translations will make the computational context of effects explicit;
+Continuation-Passing Style will represent pending computations as continuation closures;
+closure conversion or defunctionalization will then turn these closures into data;
 all stack-allocated and heap-allocated data must be tracked with suitable types,
 such that pointers to other data can be suitably saved and restored.
 Then, every low-level checkpointing transaction will
-add the new context objects to the database and delete the old ones from it.
-To detect which objects are old and can be deleted, and avert memory leaks,
-the compiler will implement the static or dynamic model of ownership or liveness
-of context objects in the programming language semantics.
+store new or modified context objects in the database.
+To avert memory leaks, objects no longer reachable
+from any retained persistent root can be identified and reclaimed,
+with the language's compiler and runtime implementing static or dynamic models of ownership
+or liveness for these objects.
 The high-level approach may or may not perform better than the low-level approach
 in persisting programs; yet support for all the primitives and transformations described
 may be required anyway to deal with Schema Upgrade.
@@ -754,7 +770,7 @@ low-level VM for all programs.
 There are costs and benefits to either approach with many tradeoffs, and
 the “best” solution for you might lie in the middle.
 
-Whether you choose a higher- or lower- level approach,
+Whether you choose a higher- or lower-level approach,
 good luck with doing it manually. Have some wonderful time with SQL.
 You’ll soon find that SQL’s rigid and flat (non-recursive) database schemas
 are incapable of directly storing the state of (recursive) activities.
@@ -764,7 +780,8 @@ But while obviously possible in theory,
 it is impossible in practice with the limited resources available to developers:
 for a substantial program, it may involve thousands of typed tables (one per frame type);
 you may eschew the normalization and typechecking on the database side,
-but will still have to deal with the same mess manually on the client side.
+or use a NoSQL key-value store,
+but you will still have to deal with the same mess manually on the client side.
 What's more, even small changes in your program may lead to large changes
 in the persistence model, that need to be correctly propagated everywhere;
 manual persistence is not modular at all.
@@ -774,7 +791,7 @@ is to automate it, at which point you have Orthogonal Persistence.
 Finally, mind that running with Orthogonal Persistence requires no changes
 to internal-only applications, but does require small changes to network
 applications that transact with external devices and remote servers.
-These will be local, modular, modifications, but modifications still.
+These will be local, modular modifications, but modifications still.
 In particular, you will have to use the atomic section and memory barrier APIs
 to ensure your program correctly persists its effects
 when communicating with external services.
@@ -782,8 +799,8 @@ Also, when a persistent process wakes up after a pause, interrupt, failure,
 etc., it will reactivate all potential interrupted activities, re-send
 all messages marked for sending that haven’t timed out yet,
 and poll all the information sources for messages it may have missed.
-Your network protocols will hopefully support a mode when the re-sent
-messages will be idempotent, and where the data sources can indeed be polled
+Your network protocols will hopefully support a mode in which
+the re-sent messages will be idempotent, and the data sources can indeed be polled
 for messages received since the last one committed.
 
 ### Composing Persistence Domains
@@ -793,7 +810,7 @@ filesystems, databases, storage services, is extremely hard, and
 will be fragile with respect to any change in the configuration.
 It will require coordination with every module that manually persists any data,
 as well as special code to handle the outermost places that start and commit
-transactions. This is undoable in practice.
+transactions. This is unworkable in practice.
 At best, Manual Persistence will use some database service that is
 configured to have replicas, as part of a single protocol,
 with expensive system administrators to keep it all running.
@@ -816,9 +833,9 @@ share transactions and not need an extra 2-Phase-Commit protocol).
 
 See my document on [Storage Domains](domains.md).
 
-## Long Range Issues with Persistence
+## Long-Range Issues with Persistence
 
-Orthogonal Persistence completely solves “short range” persistence issues:
+Orthogonal Persistence completely solves “short-range” persistence issues:
 programmers do not have to explicitly open and close files and network connections,
 read and write, marshal and unmarshal, encode and decode data,
 organize their accesses in transactions,
@@ -826,10 +843,10 @@ metaprogram a “database language” using strings, etc.,
 not to mention handle all the associated errors,
 for their data to persist.
 Most of the code having to deal with persistence,
-which is a sizeable fraction of the code, disappears.
-Is automated away. Humans do not have to spend brain cycles about it anymore.
+which is a sizeable fraction of the code, disappears—is automated away.
+Humans do not have to spend brain cycles about it anymore.
 
-But that means that mid- to long- range issues take the front stage:
+But that means that mid- to long-range issues take the front stage:
 
   - Low-level languages, or “untrusted” low-level escapes from high-level languages,
     can *persistently* corrupt data, in ways that may only be detected long after the fact,
@@ -868,7 +885,8 @@ But that means that mid- to long- range issues take the front stage:
   - Forms of [PCLSRing](http://fare.tunes.org/tmp/emergent/pclsr.htm)
     with respect to *user* invariants (not just “system” invariants)
     are necessary to cleanly kill processes, but also to stop, inspect, migrate, upgrade them.
-    This requires both system support, compiler support for every language, and language support
+    This requires at the same time
+    system support, compiler support for every language, and language support
     to enable users to define those invariants in the interaction “language” (formal or informal)
     of *their* users.
 
@@ -881,18 +899,18 @@ But that means that mid- to long- range issues take the front stage:
     must be virtualized away from the underlying transient operating system,
     since they might change from time to time as the process migrates
     to survive adversarial events.
-    A "Persistent Operating System" might offer a Virtual Machine where they are replaced by
+    A “Persistent Operating System” might offer a Virtual Machine where they are replaced by
     some persistent handle that abstracts away the mapping between their persistent identity
     and an underlying transient implementation.
-    A lower-level "Persistent Layer" might instead let the programmers (and their libraries)
+    A lower-level “Persistent Layer” might instead let the programmers (and their libraries)
     implement those abstractions themselves—but even then the transient hostname, pid and fds
     shall only be accessed from within a transient block that covers their lifetime,
     possibly as part of a dedicated transient thread (for e.g. file descriptors).
 
 All these concerns exist with Manual Persistence as well as with Orthogonal Persistence.
 But with Manual Persistence, the low-level concerns of getting any persistence at all
-create so much work and slows down development so much that these higher-level concerns
-appear secondary in comparison.
+create so much work and slow down development so much
+that these higher-level concerns appear secondary in comparison.
 By saving developers from those lowly concerns,
 Orthogonal Persistence elevates the struggle to write software,
 rather than eliminates it.
@@ -939,10 +957,10 @@ However, note that the otherwise interesting 2009 retrospective article
 by Alan Dearle, Graham N.C. Kirby and Ron Morrison
 does *not* mention persistence of continuations, stacks, execution contexts, processes, etc.
 Execution persistence is explicitly documented for Napier88 and STAPLE;
-I have not yet established whether PS-algol or Ten15 supported it.
+I have not yet established whether PS-Algol or Ten15 supported it.
 The same article also claims that PS-Algol was the first language to provide orthogonal persistence,
-and fails to cite or credit Eumel whose language ELAN seems to have existed even earlier,
-and did persist processes.
+and fails to cite or credit the earlier EUMEL environment for the ELAN language,
+which persisted both data and executing processes.
 
 [Acton](https://www.acton-lang.org/),
 a “fault tolerant distributed programming platform for building mission critical systems”
@@ -950,11 +968,11 @@ based on a high-level language (active in 2024).
 
 Recent systems (as of 2024) offering “Durable Execution” or “Durable Computing”,
 to insist they cover processes, not just data:
-[Golem](https://Golem.cloud),
+[Golem](https://golem.cloud),
 a WASM-based execution platform to run highly reliable services
 with Orthogonal Persistence, which they call “Durable Execution”;
 in the same vein, [Temporal.io](https://temporal.io/),
-[restate](https://restate.dev), [DBOS](https://DBOS.dev)…
+[restate](https://restate.dev), [DBOS](https://dbos.dev)…
 they all rely on logging transactions that may be replayed to restore state;
 some also dump a snapshot once in a while so replay doesn't have to be from zero.
 
@@ -969,8 +987,8 @@ gotta mine these conferences, and more.
 (Be sure to include some reading about “Pointer Swizzling”.)
 
 Recent work:
-[TreeSLS: A Whole-system Persistent Microkernel with Tree-structured State Checkpoint on NVM](https://dl.acm.org/doi/10.1145/3600006.3613160), SOSP 2023
-[Reducing Write Barrier Overheads for Orthogonal Persistence](https://dl.acm.org/doi/10.1145/3687997.3695646), SLE 2024
+* [TreeSLS: A Whole-system Persistent Microkernel with Tree-structured State Checkpoint on NVM](https://dl.acm.org/doi/10.1145/3600006.3613160), SOSP 2023
+* [Reducing Write Barrier Overheads for Orthogonal Persistence](https://dl.acm.org/doi/10.1145/3687997.3695646), SLE 2024
 
 Question: see how [Unison](https://www.unison-lang.org/), [Dark](https://darklang.com/) or
 [Val town](https://www.val.town/) and other “infrastructure included” languages
