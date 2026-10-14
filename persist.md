@@ -257,8 +257,12 @@ can interact in synchronous ways, with a shared underlying transaction
 and memory barriers, always going forward, without any consistency problem:
 **In case of crash, all activities within the domain are consistently rolled back
 together to the last commit.**
-Up to one commit interval of work is lost, and any externally visible effect
+Work since the last completed commit may be lost;
+the target commit interval alone does not bound this loss,
+as commits can be further delayed by lingering atomic sections and storage latency.
+External effects that rely on the durability of that work
 must have been gated by a barrier.
+
 This is totally unlike the database transaction model, where
 processes can never know that they are not going to interfere with each other,
 with all but one having to be rolled back.
@@ -270,8 +274,11 @@ any of the mechanisms that databases provide at the wrong place.
 
 On the other hand, processes in distinct persistence domains must
 communicate via asynchronous messages and abstractions built atop such.
-Moreover, every asynchronous message sent to another persistent process must
-(1) be idempotent, and (2) be sent only after a memory barrier.
+Moreover, every asynchronous message sent to a persistent process
+in a different persistence domain must
+(1) be idempotent, and (2) be sent only after a memory barrier
+that commits the state on which the message depends,
+including the obligation to send it.
 Indeed, due to transient failures and restarts, a given action may be taken
 many times after its triggering condition was committed, yet before
 a sufficient reaction was acknowledged. Thus, it should be possible
