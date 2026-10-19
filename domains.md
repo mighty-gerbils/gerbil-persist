@@ -1,13 +1,113 @@
 # Storage Domains
 
-A **storage domain** is a fully self-describing, persistent storage entity. It can
-store data in relational tables, a key-value store, or a page store. It also carries
-standardized metadata enabling long-term management: encryption and privacy policy,
-redundancy across identified backends, live executor state, and the information needed
-to recover, migrate, or hand off the storage domain to a new executor or infrastructure.
+A **storage domain** is an autonomous entity for persistent storage.
 
-Storage domains are the unit of storage policy. Every application is bound to a storage
-domain by its controlling meta-object and transparently inherits all of its policies.
+## What Storage Domain Does and Does Not Mean
+
+### Not Execution ###
+
+**Storage domains** are entities that define where data is stored.
+They are explicitly distinguished from Data Stores, Virtual Machines, or Application,
+that respectively define how data is modeled, and how code is evaluated,
+and what code is indeed evaluated.
+
+**Data Stores** define the *data model*, i.e. what (kind of) data is even stored.
+Data stores can be relational database tables, key-value stores, tuple spaces, filesystems,
+distributed virtual memory for a durable virtual machines, object “prevalence” layers,
+application-specific persistence framework, etc.
+A *storage domain* will serve as the *backend* for one or many *data stores*,
+and will be largely agnostic to what data model those data stores use.
+
+**Execution Environments** define where code is executed:
+what pool of hosts, workers, instances, servers, nodes, etc.,
+within what network of machines, will execute the code.
+
+**Applications** define what code is executed:
+what it does, with what algorithms or heuristics, etc.
+An application, running on a given execution environment,
+must be connected to a data store providing a compatible data model,
+that will itself have a storage domain as a backend.
+
+### Storage ###
+
+**Storage** means that a *storage domain* supports storing data from a *data store*.
+
+*Storage* on the other hand does provide a model of
+“Atomicity” and “Consistency” (the A and C of “ACID” databases):
+at all points in time, Storage makes it well-defined what is or isn’t stored,
+and ensures that what is stored will indeed always be and remain consistent
+with whatever data model is provided by the *data store* that uses the storage,
+itself evolving in a way consistent with
+the *virtual machine* or *application* that mutates that store.
+
+On the other hand, *Storage* does not say anything about
+“Isolation” (defined by the virtual machine and its evaluation model above the data model),
+or “Durability” (defined by Persistence aspect of Storage Domains, described below).
+
+Our minimal model for *Storage* is that of a *journal* of *changesets*
+(that describe actions to take to faithfully update the data being modeled);
+journals can be pruned by keeping *snapshots*
+(a snapshot being an entity that records an entire consistent state of the data,
+merging all changesets from the very start to some point in time):
+changesets that are already part of the latest saved image can be safely archived or deleted
+without jeopardizing the data.
+
+### Persistence ###
+
+**Persistence** means that the data being stored in a Storage Domain
+is supposed to resist some well-identified set of predictable and unpredictable adversarial events.
+Different “levels” of persistence will address different such sets of events.
+
+The adversarial events that storage will persist through typically (but not necessarily)
+include some or all of the following:
+software crash, hardware malfunction, power loss, cosmic rays,
+natural aging of hardware, obsolescence of software, “bitrot” of data,
+vendor failure, hardware theft, datacenter bombings,
+vendor betrayal, employee betrayal, spy infiltration,
+well-paid and well-trained criminals attempting to view the data or tamper with it, etc.
+
+Persistence therefore implies hardware of sufficient quality and quantity,
+redundancy between copies on servers in multiple datacenters,
+distributed consensus between those servers,
+data encryption, etc.
+
+### Entity ###
+
+**Entity** means that *Storage Domains* are first-class values,
+that can themselves be manipulated in programs, analysized and synthetisized by users,
+configured and reconfigured at runtime, etc.
+
+This is in sharp contrast with many systems in which Storage is addressed
+by special purpose logic in the system, that has to be specially
+programmed, configured, curated, etc., by some annointed class of system experts,
+“administrators”, etc.
+
+### Autonomy ###
+
+**Autonomous** means that *Storage domains* as entities
+have an identity of their own, independent from the low-level storage substratum.
+Much like the Ship of Theseus,
+you can replace all the parts in a Storage Domain, and if done carefully,
+it will retain not just its contents, but also its identity.
+
+Thus, a given Storage Domain can at any point in time store its data redundantly
+on any combination of low-level storage services,
+from bigger or smaller cloud storage providers,
+with various degrees of technical reliability, economic decentralization,
+political trustworthiness, cost efficiency, latency profiles, etc.
+At another point in time, the same domain may use a radically different combination
+of those services, as some services appear or disappear, and the competitive landscape evolves.
+
+Yet the domain can gracefully migrate data from one combination of storage providers to the next.
+As the data is transparently copied, the domain retains all its data;
+as the data is modified with time, the domain retains its identity and its integrity.
+The applications connecting to it can recognize that they are interacting
+with the same domain, the correct domain they were configured to work with.
+
+To achieve this autonomy, each Storage Domain has metadata associated to it,
+that identify it, that determine suitable keys to encrypt and decrypt all data,
+that track its configuration as it migrates from one set of storage providers to another, and
+that ensure that only a single well-identified execution system connects to the domain at any moment.
 
 ---
 
@@ -16,7 +116,7 @@ A large part of it was slop produced by Claude under my supervision.
 https://claude.ai/share/867e1873-f77b-4905-ae0f-af87930a7f20
 
 
-## 1. Security and Isolation
+## Security and Isolation
 
 Every application is bound to an execution domain by its controlling meta-object, and
 transparently inherits all of the execution domain's policies, including its storage
@@ -24,17 +124,17 @@ domain. A regular application is not allowed to know what execution domain it is
 to, let alone its storage domain. Application code that attempts to discover this
 information is automatically flagged as malicious.
 
-Only the owning execution domain may write to a storage domain. Writes from any other
-execution domain are treated as a bug or attack.
+Only the owning execution domain may write to a storage domain.
+Writes from any other execution domain are treated as a bug or attack.
 
 Typically, only the domain manager is allowed access to storage domain configuration.
 By default the domain manager enforces the following policies:
 
 - It will refuse to **export** its data into any execution domain allowed to communicate
   with the outside world. It will only export it to a management console for the administrator.
-- It will accept data **imported** from such a domain as change proposals, but will only
-  apply proposed changes after analyzing their consequences, and requiring confirmation
-  from the administrator for each suspicious item detected.
+- It will accept to **import** data from such any domain authorized by the administrator,
+  but will only apply proposed changes after analyzing their consequences,
+  and requiring confirmation from the administrator for each suspicious item detected.
 - The analysis itself happens in a temporary execution domain that is only allowed to
   produce a report. Analyst software may have its own metadata anonymized during
   analysis, and deanonymized afterward, so the analyst cannot leak what it is analyzing
@@ -59,14 +159,14 @@ confirmation before any change is applied.
 
 ---
 
-## 2. Authentication and Encryption
+## Authentication and Encryption
 
 ### Backends Are Dumb Byte Stores
 
 Backends store and retrieve bytes. They have no knowledge of encryption,
 authentication, or what the bytes mean. Authentication and encryption are applied
 exclusively by the storage strategy — not by the backend. A backend with no storage
-strategy wrapping it stores plaintext with no authentication whatsoever.
+strategy wrapping stores plaintext with no authentication whatsoever.
 
 This is a legitimate configuration in many cases:
 
@@ -191,7 +291,7 @@ expected final fingerprint. The final fingerprint serves as checksum that everyt
 
 ---
 
-## 3. Bootstrap, Recovery, and Survival
+## Bootstrap, Recovery, and Survival
 
 ### Bootstrap Data
 
@@ -305,7 +405,7 @@ A configuration contains all storage and execution policies:
 ```
 
 The domain configuration is always available in full even when the current backend
-is but a shard of a RAID-style quorum, out of synch with other shards.
+is but a shard of a RAID-style erasure-coding quorum, out of synch with other shards.
 It should be fairly short anyway. It is stored salted, encrypted, authenticated.
 It changes only when upgraded, in the usual transactional way.
 Global counter and writing a new immutable configuration blob at a new location.
@@ -374,7 +474,7 @@ and it involves a finite number of backends.
 
 ---
 
-## 4. Executor Model
+## Executor Model
 
 ### Single Changeset
 
@@ -474,7 +574,7 @@ Re-execution must be deterministic from the logged changesets.
 
 ---
 
-## 5. Configuration and Data Upgrade Protocol
+## Configuration and Data Upgrade Protocol
 
 Configuration and data upgrades are always coupled.
 All upgrade state is tracked in the domain state cell.
@@ -525,7 +625,7 @@ TODO: Verify that the algorithm is safe.
 
 ---
 
-## 6. Backend Health and Failure Handling
+## Backend Health and Failure Handling
 
 When something bad happens to a backend, or it falls behind in accepted changesets,
 it is added to the failure list, its status is changed to "under repair",
@@ -537,7 +637,7 @@ storage configuration upgrade to change.
 
 ---
 
-## 7. Storage Configuration
+## Storage Configuration
 
 The storage configuration is a tree expression declared as the `storage:` field of
 `DomainConfiguration`. The tree composes backends (leaves), quorum combinators, and the
@@ -665,7 +765,7 @@ A few potential optimizations related to compaction:
 
 ---
 
-## 8. Schema Metadata
+## Schema Metadata
 
 The schema is an encrypted blob stored as part of the `Configuration`. Its content —
 table definitions, column types, reference constraints, — is specified in a separate document.
@@ -674,7 +774,7 @@ producing a new `Configuration` blob at a new changeset location.
 
 ---
 
-## 9. Domain DSL — Grammar Summary
+## Domain DSL — Grammar Summary
 
 ```scheme
 ;; Top-level storage domain value
@@ -748,7 +848,7 @@ producing a new `Configuration` blob at a new changeset location.
 
 ---
 
-## 10. Example Storage Domain Definitions
+## Example Storage Domain Definitions
 
 ```scheme
 ;; Simple local storage domain — no encryption, trusted storage
@@ -829,3 +929,24 @@ producing a new `Configuration` blob at a new changeset location.
 During recovery, all the data is read, which among other things prevents revealing
 data patterns from access timing. A manifest that includes size information is part
 of the authenticated metadata, so a malicious store cannot feed you infinite garbage.
+
+## Implementation Plan
+
+Let's start with a truly minimal system:
+[ ] Filesystem backend
+[ ] SSH/SCP backend for remote storage (with persistent connection for better latency)
+Later, we'll have backends for SQLite, PgSql; and on the web: IndexedDB or OPFS. But not now.
+
+Encryption, to be done through openssl, gerbil-crypto, gerbil-poo:
+[ ] PBKDF2 key generation
+[ ] AES-256-GCM encryption+auth (GHASH)
+[ ] 32-bit erasure-coding.
+[ ] BLAKE3 hash if needed (?)
+[ ] Erasure coding through Reed-Solomon coding on F_2^32 or F_2^64
+[ ] Trivial key vault: enter passphrase at the start of the process.
+Later, add support for better/hardware a key vault: GnuPG, Yubikey, TPM, web: web crypto, etc.
+
+Data+Evaluation Model:
+[ ] Single-threaded variant of an applicative CEK machine, with delimited control, mostly immutable data, but
+    also explicit lazy cells, explicit mutable cells, access to hashing primitive
+[ ] A trivial Scheme dialect on top of the above

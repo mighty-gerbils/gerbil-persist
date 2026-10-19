@@ -930,13 +930,17 @@ The former is based on chapters 2 to 5 of my blog [“Houyhnhnm Computing”](ht
 (pronounced “Hunam Computing”).
 See also my old article on [Orthogonal Persistence on the TUNES Wiki](http://tunes.org/wiki/orthogonal_20persistence.html)
 
-[A Persistent System In Real Use: Experiences Of The First 13 Years](https://os.itec.kit.edu/65_2525.php), by Jochen Liedtke, IWOOS 1993. Even the processes are Persistent. See the
+[A Persistent System In Real Use: Experiences Of The First 13 Years](https://os.itec.kit.edu/65_2525.php), by Jochen Liedtke, IWOOS 1993.
+In his Operating System [EUMEL](https://archiveos.org/eumel/),
+for which he later wrote the microkernels L3
+(and L4, though he died before porting EUMEL or a successor to it to L4),
+and its programming language ELAN,
+even the processes are Persistent. See the
 [Website](https://6xq.net/eumel/),
 [Docs](https://github.com/PromyLOPh/eumel),
 [Code](https://github.com/PromyLOPh/eumel-src) and
-[Tools](https://github.com/PromyLOPh/eumel-tools)
-for the persistent system
-[EUMEL](https://archiveos.org/eumel/).
+[Tools](https://github.com/PromyLOPh/eumel-tools).
+
 TODO: Find code for the persistence work done on top of
 L3 (maybe included in or linked from Eumel repositories?)
 and L4 (see Charm?).

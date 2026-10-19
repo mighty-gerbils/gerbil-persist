@@ -133,7 +133,8 @@ This document is available under the bugroff license.
              at the bottom of the staircase.
              Captain Haddock, with a unicorn on his sweater,
              is on the top of left of the panel facing right and walking down the staircase,
-             and whisky is ejected from the glass in his hand as as he suddenly opens his arms wide and high
+             and whisky is ejected from the glass in his left hand
+             as he suddenly opens his arms wide and high
              to effusively greet the technician.
              The technician, to the right of the panel, turned towards captain Haddock,
              carries in his hands a white box with a picture of a laptop on it.
@@ -142,10 +143,11 @@ This document is available under the bugroff license.
              Another speech bubble from the technician declares: "It’s preinstalled, just enter your credentials".
 
              Nestor the Marlinskpike butler clad in black tailcoat, white shirt, black bowtie,
-             no mustache, balding grayhaired, is standing next to Haddock on the staircase nearer the top of the panel.
-             Nestor is splashed by the whisky on his face.
+             no mustache, balding grayhaired, is standing next to Haddock
+             on the staircase nearer the top of the panel,
+             such that his face is hit by Haddock's left hand as it opens wide.
              Nestor is startled and tips the platter he was carrying.
-             The bottle of whisky on that platter falls.
+             A bottle of whisky that was on the platter is now falling.
 
              Generate a comic panel in the genre of Hergé.
              Captain Haddock, with a unicorn on his sweater,
