@@ -317,6 +317,8 @@ or save it in a local file with a remote backup, etc.
 Nevertheless the seed is the irreplaceable piece you must keep safe —
 everything else can be reconstructed given sufficient access to account records.
 
+TODO: Attestation chains from initial set of operators
+
 ### Survival Guarantees
 
 **Configuration survives** if the operator retains bootstrap data AND a quorum of

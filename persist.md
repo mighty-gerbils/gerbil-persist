@@ -73,11 +73,15 @@ how to statically assemble them up into larger storage “volumes”.
 In the Orthogonal Persistence paradigm, developers prefer to talk about
 Persistence Domains as logical entities having a persistent identity,
 and how they are dynamically mapped down to various underlying substrates.
-This means a persistence domain can survive indefinitely
-through simple occasional reconfiguration, even though the
+The big difference between the two is that
 underlying substrates have a short, finite lifespan
-of a few years at most each, which inevitably causes catastrophic
-transitions in the Manual Persistence paradigm.
+of a few years at most each.
+In the paradigm of Manual Persistence, this is a catastrophic, traumatic
+experience every time it happens—despite the fact that it was predictable and inevitable
+from the get go, just not the exact time of it.
+In the paradigm of Orthogonal Persistence, each persistence domain
+can survive indefinitely, and change of substrate is a simple routine reconfiguration;
+same predictability and inevitability, just without catastrophe and trauma.
 
 When mapping a persistence domain to a database or cloud service,
 transactions would of course be used for the sake of atomicity.
@@ -310,8 +314,9 @@ when that state is either committed or rolled back.
 
 As a persistence domain may have many different notions of atomicity of increasing strength,
 and persistence across domains is even stronger,
-there are as many variants of synchronization primitives with accordingly increasing latency.
-From fastest to slowest, you wait for: execution on one CPU without consensus;
+there are corresponding variants of synchronization primitives,
+whose latency depends on the guarantees, placement and implementation.
+A typical progression from fastest to slowest is: execution on one CPU without consensus;
 consensus between the CPUs of your local computer; local backup;
 one remote backup without consensus; consensus within a domain;
 and consensus across domains.
@@ -611,9 +616,9 @@ Manual Persistence is unmodular for the very same reasons, in reverse:
     it’s already in a transaction or not, to be conscious of what global entry
     point in a completely different module owns the transaction.
   - Transactions are like always being in a giant atomic section that involves
-    modules you don’t know about, handling data you don’t own yet must somehow
-    respect, while those modules must also magically respect data they know
-    nothing about from other modules.
+    handling and having to respect data from other modules you know nothing about,
+    while those modules must also magically respect data they know
+    nothing about from your modules.
   - The model of a persistent database with transient clients supposes that
     you already have a complete transient computation incapable of persistence,
     then builds a completely different model for persistence without computations,
@@ -626,7 +631,7 @@ Manual Persistence is unmodular for the very same reasons, in reverse:
     protected by those nested transactions.
   - Transactions and commits offer no direct and safe way to schedule follow-up
     code to be executed after some effects are persisted. Any client-side
-    follow-up code after it is guaranteed to not be guaranteed to run,
+    follow-up code is guaranteed to not be guaranteed to run,
     and multi-transaction “sagas” that run on such clients
     are intrinsically unreliable.
   - Attempts to avoid sequences of many transactions
@@ -865,7 +870,7 @@ But that means that mid- to long-range issues take center stage:
 
   - Low-level languages, or “untrusted” low-level escapes from high-level languages,
     can *persistently* corrupt data, in ways that may only be detected long after the fact,
-    after dancing a “fandango on core”.
+    after dancing a [“fandango on core”](http://catb.org/jargon/html/F/fandango-on-core.html).
     The need to survive low-level errors makes regular backups necessary,
     yet sometimes not sufficient. Scary.
 
@@ -940,18 +945,20 @@ See also my old article on [Orthogonal Persistence on the TUNES Wiki](http://tun
 
 [A Persistent System In Real Use: Experiences Of The First 13 Years](https://os.itec.kit.edu/65_2525.php), by Jochen Liedtke, IWOOS 1993.
 In his Operating System [EUMEL](https://archiveos.org/eumel/),
-for which he later wrote the microkernels L3
-(and L4, though he died before porting EUMEL or a successor to it to L4),
 and its programming language ELAN,
 even the processes are Persistent. See the
 [Website](https://6xq.net/eumel/),
 [Docs](https://github.com/PromyLOPh/eumel),
 [Code](https://github.com/PromyLOPh/eumel-src) and
 [Tools](https://github.com/PromyLOPh/eumel-tools).
+So were they in the successor system L3 (for which he wrote the famous microkernel).
+Of the successor he was working on, L4, the microkernel continued to inspire research for decades;
+but the Orthogonally Persistent aspect of his systems sadly lost traction
+after Liedtke's untimely death, despite some continued work by his students,
+including [Ceelen’s 2002 implementation](https://os.itec.kit.edu/97_650.php).
 
 TODO: Find code for the persistence work done on top of
-L3 (maybe included in or linked from Eumel repositories?)
-and L4 (see Charm?).
+L3 (maybe included in or linked from Eumel repositories?) and L4.
 
 Operating Systems that persist processes, such as
 [KeyKOS](https://archiveos.org/keykos/),
@@ -985,7 +992,9 @@ which persisted both data and executing processes.
 a “fault tolerant distributed programming platform for building mission critical systems”
 based on a high-level language (active in 2024).
 
-Recent systems (as of 2024) offering “Durable Execution” or “Durable Computing”,
+Recent systems (as of 2024) offering
+[“Durable Execution”](https://patents.google.com/patent/US9098359B2/en)
+or “Durable Computing”,
 to insist they cover processes, not just data:
 [Golem](https://golem.cloud),
 a WASM-based execution platform to run highly reliable services
